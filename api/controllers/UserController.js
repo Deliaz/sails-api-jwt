@@ -35,7 +35,7 @@ module.exports = {
 			})
 			.catch(err => {
 				if (!err) {
-					return res.send(200, {err: 'This username is already in use'});
+					return res.json(200, {err: 'This email is already in use'});
 				}
 				console.error(err);
 				return res.send(500); // TODO
@@ -46,18 +46,13 @@ module.exports = {
 	login: function (req, res) {
 		const email = req.body.email;
 		const password = req.body.password;
-		const passwordConfirm = req.body.password_confirm;
-
-		if (password !== passwordConfirm) {
-			return res.json(200, {err: 'Password doesn\'t match'});
-		}
 
 		UserManager.authenticateUserByPassword(email, password)
 			.then(token => {
 				res.json(200, {token});
 			})
 			.catch(err => {
-				if (!err) return res.json(401, {err: 'User not found'});
+				if (!err) return res.json(401, {err: 'Invalid email or password'});
 				console.log('Error: ', err);
 				res.json(500);
 			})
@@ -67,16 +62,16 @@ module.exports = {
 		const email = req.body.email;
 
 		if (!email) {
-			return res.json(200, {err: 'Email is required'});
+			return res.json(401, {err: 'Email is required'});
 		}
 
 		UserManager
 			.generateResetToken(email)
 			.then(function () {
-				res.send(200, {message: 'Check your email'});
+				res.json(200, {message: 'Check your email'});
 			})
 			.catch(err => {
-				if (!err) return res.json(401, {err: 'User not found'});
+				if (!err) return res.json(404, {err: 'User not found'});
 				console.log('Error: ', err);
 				res.json(500);
 			})
@@ -120,15 +115,15 @@ module.exports = {
 		const newPasswordConfirm = req.body.new_password_confirm;
 
 		if (!email) {
-			return res.json(200, {err: 'Email is required'});
+			return res.json(200, {err: 'Email is required'}); //TODO test + code
 		}
 
 		if (!resetToken) {
-			return res.json(200, {err: 'Reset token is required'});
+			return res.json(200, {err: 'Reset token is required'}); //TODO test + code
 		}
 
 		if (!newPassword || newPassword !== newPasswordConfirm) {
-			return res.json(200, {err: 'Password doesn\'t match'});
+			return res.json(200, {err: 'Password does not match'}); //TODO test + code
 		}
 
 		UserManager

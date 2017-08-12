@@ -80,6 +80,8 @@ module.exports = {
 		return done(token);
 	},
 
+
+	// TODO promisify
 	authenticateUserByToken: function (token, done) {
 		jwt.verify(
 			token,
@@ -88,6 +90,7 @@ module.exports = {
 			(err, tokenData) => {
 				if (err) return done(err);
 
+				// TODO Check if user not locked
 				User
 					.findOne({id: tokenData.id})
 					.exec(function (err, user) {
@@ -112,7 +115,7 @@ module.exports = {
 						if (vpErr) return reject(vpErr);
 
 						if (!isValid) {
-							return reject();
+							return reject(false);
 
 							// TODO write a lock logic
 							// updateUserLockState(user, function (err) {
@@ -145,7 +148,7 @@ module.exports = {
 						if (saveErr) return reject(saveErr);
 
 						// TODO: email the token to the user
-						console.log('Reset Token', user.resetToken);
+						// console.log('Reset Token', user.resetToken);
 
 						resolve();
 					});

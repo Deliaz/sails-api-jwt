@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
 				token = credentials;
 			}
 		} else {
-			return res.json(401, {err: 'Format is Authorization: Bearer [token]'});
+			return res.json(401, {err: 'Format is "Authorization: Bearer [token]"'});
 		}
 	} else {
 		return res.json(401, {err: 'No Authorization header was found'});
@@ -29,8 +29,7 @@ module.exports = function (req, res, next) {
 
 	UserManager.authenticateUserByToken(token, function (err, user) {
 		if (err) {
-			if (err.message === 'invalid-token') return res.json(401, {err: 'Invalid token'});
-			return res.send(500);
+			return res.json(401, {err: 'Invalid token'});
 		}
 
 		if (!user) return res.json(404, {err: 'User not found'});
