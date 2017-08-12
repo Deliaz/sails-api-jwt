@@ -43,7 +43,7 @@ describe('User API', () => {
 				.end((err, res) => {
 					res.should.have.status(401);
 					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.string;
+					res.body.err.should.be.a('string');
 					done();
 				});
 		});
@@ -55,7 +55,7 @@ describe('User API', () => {
 				.end((err, res) => {
 					res.should.have.status(200);
 					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.token.should.be.string;
+					res.body.token.should.be.a('string');
 
 					token = res.body.token;
 					done();
@@ -69,7 +69,7 @@ describe('User API', () => {
 				.end((err, res) => {
 					res.should.have.status(200);
 					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.string;
+					res.body.err.should.be.a('string');
 					res.body.err.should.be.equal('This email is already in use');
 					done();
 				});
