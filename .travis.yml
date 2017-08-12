@@ -1,5 +1,7 @@
 language: node_js
 node_js:
   - "6"
+before_script:
+  - npm install grunt # fixes sails.lift() grunt error
 script:
   - npm test
