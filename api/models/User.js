@@ -7,28 +7,32 @@
 
 const bcrypt = require('bcrypt');
 
+
+function generatePasswordHash(password) {
+	return bcrypt.genSalt(10) // 10 is default
+		.then((salt) => {
+			return bcrypt.hash(password, salt);
+		})
+		.then(hash => {
+			return Promise.resolve(hash);
+		})
+		.catch(err => {
+			return Promise.reject(err)
+		});
+}
+
 module.exports = {
 
 	attributes: {
-		username: {
-			type: 'string',
-			required: true,
-			unique: true
-		},
-
 		email: {
 			type: 'email',
 			required: true,
 			unique: true
 		},
 
-		password: {
+		role: {
 			type: 'string',
-			required: true
-		},
-
-		salt: {
-			type: 'string'
+			defaultsTo: 'user'
 		},
 
 		locked: {
@@ -54,22 +58,28 @@ module.exports = {
 
 			return {
 				id: obj.id,
-				username: obj.username
+				email: obj.email
 			};
 		},
 
 		validatePassword: function (password, done) {
-			// if (!password || password.length === 0) {
-			// 	return done(null, false);
-			// }
-			//
-			// var obj = this.toObject();
-			//
-			// UserManager.hashPassword(password, obj.salt, function (err, hashedPassword) {
-			// 	if (err) return done(err);
-			//
-			// 	done(null, hashedPassword === obj.password);
-			// });
+			bcrypt
+				.compare(password, this.toObject().encryptedPassword)
+				.then(match => {
+					done(null, !!match);
+				})
+				.catch(err => done(err))
+		},
+
+		setPassword: function (password, done) {
+			generatePasswordHash(password)
+				.then(hash => {
+					this.encryptedPassword = hash;
+					done();
+				})
+				.catch(err => {
+					done(err);
+				});
 		}
 	},
 
@@ -79,39 +89,16 @@ module.exports = {
 	 * @param next
 	 */
 	beforeCreate: function (values, next) {
-		bcrypt.genSalt(10)
-			.then((salt) => {
-				return bcrypt.hash(values.password, salt);
-			})
+		generatePasswordHash(values.password)
 			.then(hash => {
+				delete(values.password);
 				values.encryptedPassword = hash;
 				next();
 			})
 			.catch(err => {
 				next(err);
 			});
-	},
-
-
-	/**
-	 * Compare auth password with stored password
-	 * @param password
-	 * @param user
-	 * @param cb
-	 */
-	comparePassword: function (password, user, cb) {
-		bcrypt
-			.compare(password, user.encryptedPassword)
-			.then(match => {
-				if (match) {
-					cb(null, true);
-				} else {
-					cb(err);
-				}
-			})
-			.catch(err => cb(err))
 	}
-
 
 };
 

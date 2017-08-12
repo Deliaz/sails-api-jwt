@@ -8,9 +8,11 @@
 	  "bcrypt": "^1.0.2",
     "include-all": "^1.0.0",
 	  "jsonwebtoken": "^7.4.2",
+	  "moment": "^2.18.1",
     "rc": "1.0.1",
     "sails": "~0.12.13",
-    "sails-disk": "~0.10.9"
+	  "sails-disk": "~0.10.9",
+	  "shortid": "^2.2.8"
   },
   "scripts": {
     "debug": "node debug app.js",

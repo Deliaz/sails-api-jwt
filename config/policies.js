@@ -26,15 +26,14 @@ module.exports.policies = {
 	 *                                                                          *
 	 ***************************************************************************/
 
-	'*': ['jwt'],
+	'*': ['jwtAuth'],
 
 	'UserController': {
-		'create': true // We dont need authorization here, allowing public access
+		'create': true,
+		'login': true,
+		'forgotPassword': true,
+		'resetPasswordByResetToken': true
 	},
-
-	'AuthController': {
-		'*': true // We dont need authorization here, allowing public access
-	}
 
 	/***************************************************************************
 	 *                                                                          *
