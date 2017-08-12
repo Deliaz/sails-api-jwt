@@ -1,30 +1,30 @@
 {
 	"name": "sails-api-jwt",
-  "private": true,
+	"private": true,
 	"version": "1.0.0",
 	"description": "JWT API Sails.js",
-  "keywords": [],
-  "dependencies": {
-	  "bcrypt": "^1.0.2",
-    "include-all": "^1.0.0",
-	  "jsonwebtoken": "^7.4.2",
-	  "moment": "^2.18.1",
-    "rc": "1.0.1",
-    "sails": "~0.12.13",
-	  "sails-disk": "~0.10.9",
-	  "shortid": "^2.2.8"
-  },
-  "scripts": {
-    "debug": "node debug app.js",
-	  "start": "node app.js",
-	  "test": "mocha ./test/*.test.js"
-  },
-  "main": "app.js",
-  "repository": {
-    "type": "git",
-	  "url": "https://github.com/Deliaz/sails-api-jwt.git"
-  },
-  "author": "deliaz",
+	"keywords": [],
+	"dependencies": {
+		"bcrypt": "^1.0.2",
+		"include-all": "^1.0.0",
+		"jsonwebtoken": "^7.4.2",
+		"moment": "^2.18.1",
+		"rc": "1.0.1",
+		"sails": "~0.12.13",
+		"sails-disk": "~0.10.9",
+		"shortid": "^2.2.8"
+	},
+	"scripts": {
+		"debug": "node debug app.js",
+		"start": "node app.js",
+		"test": "mocha ./test/*.test.js"
+	},
+	"main": "app.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Deliaz/sails-api-jwt.git"
+	},
+	"author": "deliaz",
 	"license": "",
 	"devDependencies": {
 		"chai": "^4.1.1",
