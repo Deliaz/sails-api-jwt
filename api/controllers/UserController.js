@@ -103,7 +103,7 @@ module.exports = {
 			})
 			.catch(err => {
 				if (!err) return res.json(401, {err: 'User not found'});
-				console.log('Error: ', err);
+				if (err === 'invalid_pass') return res.json(401, {err: 'Invalid password'});
 				res.json(500);
 			});
 	},

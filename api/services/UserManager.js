@@ -170,7 +170,7 @@ module.exports = {
 						if (vpErr) return reject(vpErr);
 
 						if (!isValid) {
-							return reject('Invalid pass');
+							return reject('invalid_pass');
 						}
 						else {
 

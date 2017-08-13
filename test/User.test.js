@@ -278,4 +278,101 @@ describe('User API', () => {
 		});
 	});
 
+
+	describe('Password change', () => {
+		it('should not allow to change password without auth header', done => {
+			chai.request(API)
+				.post('/change_password')
+				.send({
+					email: 'a@gmail.com',
+					password: '111', // changed by reset token
+					new_password: '321',
+					new_password_confirm: '321'
+				})
+				.end((err, res) => {
+					res.should.have.status(401);
+					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					res.body.err.should.be.a('string');
+					done();
+				});
+		});
+
+		it('should not allow to change password with wrong current password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: '123',
+					new_password: '321',
+					new_password_confirm: '321'
+				})
+				.end((err, res) => {
+				console.log(res.body);
+					res.should.have.status(401);
+					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					res.body.err.should.be.a('string');
+					done();
+				});
+		});
+
+
+		it('should not allow to change password for unknown email', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'bbb@gmail.com',
+					password: '123',
+					new_password: '321',
+					new_password_confirm: '321'
+				})
+				.end((err, res) => {
+					console.log(res.body);
+					res.should.have.status(401);
+					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					res.body.err.should.be.equal('User not found'); // TODO It is better to revoke by invalid token
+					done();
+				});
+		});
+
+		it('should not allow to change password without conform password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: '123'
+				})
+				.end((err, res) => {
+					console.log(res.body);
+					res.should.have.status(200);
+					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					res.body.err.should.be.equal('Password does not match');
+					done();
+				});
+		});
+
+
+		it('should allow to change password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: '111',
+					new_password: '321',
+					new_password_confirm: '321'
+				})
+				.end((err, res) => {
+					console.log(res.body);
+					res.should.have.status(200);
+					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					res.body.token.should.be.a('string');
+					done();
+				});
+		});
+
+		// TODO Old token should be invalid after change password
+	});
 });
