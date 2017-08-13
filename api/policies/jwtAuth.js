@@ -20,19 +20,18 @@ module.exports = function (req, res, next) {
 				token = credentials;
 			}
 		} else {
-			return res.json(401, {err: 'Format is "Authorization: Bearer [token]"'});
+			return res.badRequest(Utils.jsonErr('Format is "Authorization: Bearer [token]"'));
 		}
 	} else {
-		return res.json(401, {err: 'No Authorization header was found'});
+		return res.badRequest(Utils.jsonErr('No Authorization header was found'));
 	}
 
 
 	UserManager.authenticateUserByToken(token, function (err, user) {
-		if (err) {
-			return res.json(401, {err: 'Invalid token'});
+		if (err || !user) {
+			return res.badRequest(Utils.jsonErr('Invalid token'));
 		}
 
-		if (!user) return res.json(404, {err: 'User not found'});
 		req.userInfo = {
 			id: user.id,
 			email: user.email

@@ -5,12 +5,13 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-
-
 module.exports = {
 	index: function (req, res) {
-		res.json(200, {
-			id: req.userInfo.id // It is set in policies/jwtAuth.js
+
+		// We use here req.userInfo which is set in policies/jwtAuth.js
+		res.ok({
+			id: req.userInfo.id,
+			email: req.userInfo.email
 		});
 	},
 
@@ -20,7 +21,7 @@ module.exports = {
 		const passwordConfirm = req.body.password_confirm;
 
 		if (password !== passwordConfirm) {
-			return res.json(200, {err: 'Password doesn\'t match'});
+			return res.badRequest(Utils.jsonErr('Password does not match'));
 		}
 
 		UserManager
@@ -29,16 +30,15 @@ module.exports = {
 				password
 			})
 			.then(jwToken => {
-				res.json(200, {
+				res.created({
 					token: jwToken
-				})
+				});
 			})
 			.catch(err => {
 				if (!err) {
-					return res.json(200, {err: 'This email is already in use'});
+					return res.badRequest(Utils.jsonErr('This email is already in use'));
 				}
-				console.error(err);
-				return res.send(500); // TODO
+				return res.serverError(Utils.jsonErr(err));
 			});
 	},
 
@@ -49,12 +49,14 @@ module.exports = {
 
 		UserManager.authenticateUserByPassword(email, password)
 			.then(token => {
-				res.json(200, {token});
+				res.ok({token});
 			})
 			.catch(err => {
-				if (!err) return res.json(401, {err: 'Invalid email or password'});
-				console.log('Error: ', err);
-				res.json(500);
+				if (!err) return res.badRequest(Utils.jsonErr('Invalid email or password'));
+				if (err === 'locked') {
+					return res.forbidden(Utils.jsonErr('Account locked'));
+				}
+				res.serverError(Utils.jsonErr(err));
 			})
 	},
 
@@ -62,18 +64,17 @@ module.exports = {
 		const email = req.body.email;
 
 		if (!email) {
-			return res.json(401, {err: 'Email is required'});
+			return res.badRequest(Utils.jsonErr('Email is required'));
 		}
 
 		UserManager
 			.generateResetToken(email)
 			.then(function () {
-				res.json(200, {message: 'Check your email'});
+				res.ok({message: 'Check your email'});
 			})
 			.catch(err => {
-				if (!err) return res.json(404, {err: 'User not found'});
-				console.log('Error: ', err);
-				res.json(500);
+				if (!err) return res.notFound(Utils.jsonErr('User not found'));
+				res.serverError(Utils.jsonErr(err));
 			})
 	},
 
@@ -85,26 +86,26 @@ module.exports = {
 
 
 		if (!email) {
-			return res.json(200, {err: 'Email is required'});
+			return res.badRequest(Utils.jsonErr('Email is required'));
 		}
 
 		if (!oldPassword) {
-			return res.json(200, {err: 'Current password is required'});
+			return res.badRequest(Utils.jsonErr('Current password is required'));
 		}
 
 		if (!newPassword || newPassword !== newPasswordConfirm) {
-			return res.json(200, {err: 'Password does not match'});
+			return res.badRequest(Utils.jsonErr('Password does not match'));
 		}
 
 		UserManager
 			.changePassword(email, oldPassword, newPassword)
 			.then(function (token) {
-				return res.send(200, {token: token});
+				return res.ok({token});
 			})
 			.catch(err => {
-				if (!err) return res.json(401, {err: 'User not found'});
-				if (err === 'invalid_pass') return res.json(401, {err: 'Invalid password'});
-				res.json(500);
+				if (!err) return res.badRequest(Utils.jsonErr('Invalid email')); // Requested user not found
+				if (err === 'invalid_pass') return res.badRequest(Utils.jsonErr('Invalid password'));
+				res.serverError(Utils.jsonErr(err));
 			});
 	},
 
@@ -115,24 +116,24 @@ module.exports = {
 		const newPasswordConfirm = req.body.new_password_confirm;
 
 		if (!email) {
-			return res.json(200, {err: 'Email is required'}); //TODO test + code
+			return res.badRequest(Utils.jsonErr('Email is required')); //TODO test
 		}
 
 		if (!resetToken) {
-			return res.json(200, {err: 'Reset token is required'}); //TODO test + code
+			return res.badRequest(Utils.jsonErr('Reset token is required')); //TODO test
 		}
 
 		if (!newPassword || newPassword !== newPasswordConfirm) {
-			return res.json(200, {err: 'Password does not match'}); //TODO test + code
+			return res.badRequest(Utils.jsonErr('Password does not match')); //TODO test
 		}
 
 		UserManager
 			.resetPasswordByResetToken(email, resetToken, newPassword)
 			.then(() => {
-				res.send(200, {message: 'Done'});
+				res.ok({message: 'Done'});
 			})
 			.catch(err => {
-				if (!err) return res.json(401, {err: 'User not found'});
+				if (!err) return res.badRequest(Utils.jsonErr('Invalid email'));
 				console.log('Error: ', err);
 				res.json(500);
 			})

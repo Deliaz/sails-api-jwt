@@ -1,34 +1,48 @@
 {
-  "name": "sails-api-jwt",
-  "private": true,
-  "version": "1.0.0",
-  "description": "JWT API Sails.js",
-  "keywords": [],
-  "dependencies": {
-    "bcrypt": "^1.0.2",
-    "include-all": "^1.0.0",
-    "jsonwebtoken": "^7.4.2",
-    "moment": "^2.18.1",
-    "rc": "1.0.1",
-    "sails": "~0.12.13",
-    "sails-disk": "~0.10.9",
-    "shortid": "^2.2.8"
-  },
-  "scripts": {
-    "debug": "node debug app.js",
-    "start": "node app.js",
-    "test": "mocha --ui bdd test/*.test.js"
-  },
-  "main": "app.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Deliaz/sails-api-jwt.git"
-  },
-  "author": "deliaz",
-  "license": "",
-  "devDependencies": {
-    "chai": "^4.1.1",
-    "chai-http": "^3.0.0",
-    "mocha": "^3.5.0"
-  }
+	"name": "sails-api-jwt",
+	"private": true,
+	"version": "1.0.0",
+	"description": "JWT API Sails.js",
+	"keywords": [],
+	"dependencies": {
+		"bcrypt": "^1.0.2",
+		"farmhash": "^2.0.0",
+		"include-all": "^1.0.0",
+		"jsonwebtoken": "^7.4.2",
+		"moment": "^2.18.1",
+		"rc": "1.0.1",
+		"sails": "~0.12.13",
+		"sails-disk": "~0.10.9",
+		"shortid": "^2.2.8"
+	},
+	"scripts": {
+		"debug": "node debug app.js",
+		"start": "node app.js",
+		"test": "nyc mocha --ui bdd test/*.test.js",
+		"coverage": "nyc report"
+	},
+	"main": "app.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Deliaz/sails-api-jwt.git"
+	},
+	"author": "deliaz",
+	"license": "",
+	"devDependencies": {
+		"chai": "^4.1.1",
+		"chai-http": "^3.0.0",
+		"mocha": "^3.5.0",
+		"nyc": "^11.1.0"
+	},
+	"nyc": {
+		"exclude": [
+			"config",
+			"test",
+			"api/responses"
+		],
+		"reporter": [
+			"html",
+			"text"
+		]
+	}
 }

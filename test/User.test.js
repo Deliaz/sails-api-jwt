@@ -26,6 +26,11 @@ after(function (done) {
 	sails.lower(done);
 });
 
+function checkHeaders(res, statusCode) {
+	res.should.have.status(statusCode);
+	res.should.have.header('content-type', 'application/json; charset=utf-8');
+}
+
 
 describe('User API', () => {
 	let token;
@@ -41,9 +46,8 @@ describe('User API', () => {
 			chai.request(API)
 				.get('/index')
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.a('string');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
 					done();
 				});
 		});
@@ -53,8 +57,8 @@ describe('User API', () => {
 				.post('/create')
 				.send(regInfo)
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 201);
+
 					res.body.token.should.be.a('string');
 
 					token = res.body.token;
@@ -67,10 +71,9 @@ describe('User API', () => {
 				.post('/create')
 				.send(regInfo)
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.a('string');
-					res.body.err.should.be.equal('This email is already in use');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
+					res.body.err_msg.should.be.equal('This email is already in use');
 					done();
 				});
 		});
@@ -83,8 +86,7 @@ describe('User API', () => {
 					password: '123'
 				})
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.token.should.be.a('string');
 					done();
 				});
@@ -98,9 +100,8 @@ describe('User API', () => {
 					password: '123'
 				})
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Invalid email or password');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email or password');
 					done();
 				});
 		});
@@ -113,9 +114,8 @@ describe('User API', () => {
 					password: '333'
 				})
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Invalid email or password');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email or password');
 					done();
 				});
 		});
@@ -125,9 +125,9 @@ describe('User API', () => {
 				.post('/index')
 				.set('Authorization', 'Bearer ' + token)
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.id.should.be.a('number');
+					res.body.email.should.be.a('string');
 					done();
 				});
 		});
@@ -137,9 +137,8 @@ describe('User API', () => {
 				.post('/index')
 				.set('Authorization', 'AAA')
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Format is "Authorization: Bearer [token]"');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Format is "Authorization: Bearer [token]"');
 					done();
 				});
 		});
@@ -148,9 +147,8 @@ describe('User API', () => {
 			chai.request(API)
 				.post('/index')
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('No Authorization header was found');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('No Authorization header was found');
 					done();
 				});
 		});
@@ -160,9 +158,8 @@ describe('User API', () => {
 				.post('/index')
 				.set('Authorization', 'Bearer ' + 'AAA.BBB.CCC')
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Invalid token');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid token');
 					done();
 				});
 		});
@@ -173,9 +170,8 @@ describe('User API', () => {
 				.post('/index')
 				.set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTgsImlhdCI6MTUwMjU1NDA0NywiZXhwIjoxNTAyNjQwNDQ3fQ.E0NrVER_tPfIr5LtOX-LsMgIwlXrYawuGAHEwyxbdNw')
 				.end((err, res) => {
-					res.should.have.status(404);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('User not found');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid token');
 					done();
 				});
 		});
@@ -188,8 +184,7 @@ describe('User API', () => {
 				.post('/forgot')
 				.send({email: 'a@gmail.com'})
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.message.should.be.equal('Check your email');
 					done();
 				});
@@ -200,10 +195,9 @@ describe('User API', () => {
 				.post('/forgot')
 				.send({email: 'bbb@gmail.com'})
 				.end((err, res) => {
-					res.should.have.status(404);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 404);
 
-					res.body.err.should.be.equal('User not found');
+					res.body.err_msg.should.be.equal('User not found');
 					done();
 				});
 		});
@@ -212,10 +206,9 @@ describe('User API', () => {
 			chai.request(API)
 				.post('/forgot')
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 400);
 
-					res.body.err.should.be.equal('Email is required');
+					res.body.err_msg.should.be.equal('Email is required');
 					done();
 				});
 		});
@@ -240,9 +233,19 @@ describe('User API', () => {
 					new_password_confirm: '111'
 				})
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.message.should.be.equal('Done');
+					done();
+				});
+		});
+
+		it('should not show user info for old token', done => {
+			chai.request(API)
+				.get('/index')
+				.set('Authorization', 'Bearer ' + token)
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
 					done();
 				});
 		});
@@ -255,9 +258,12 @@ describe('User API', () => {
 					password: '111'
 				})
 				.end((err, res) => {
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.token.should.be.a('string');
+
+					// Update token after reset
+					token = res.body.token;
+
 					done();
 				});
 		});
@@ -270,9 +276,8 @@ describe('User API', () => {
 					password: '123'
 				})
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Invalid email or password');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email or password');
 					done();
 				});
 		});
@@ -290,9 +295,8 @@ describe('User API', () => {
 					new_password_confirm: '321'
 				})
 				.end((err, res) => {
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.a('string');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
 					done();
 				});
 		});
@@ -308,10 +312,8 @@ describe('User API', () => {
 					new_password_confirm: '321'
 				})
 				.end((err, res) => {
-				console.log(res.body);
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.a('string');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
 					done();
 				});
 		});
@@ -328,10 +330,8 @@ describe('User API', () => {
 					new_password_confirm: '321'
 				})
 				.end((err, res) => {
-					console.log(res.body);
-					res.should.have.status(401);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('User not found'); // TODO It is better to revoke by invalid token
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
 					done();
 				});
 		});
@@ -345,15 +345,14 @@ describe('User API', () => {
 					password: '123'
 				})
 				.end((err, res) => {
-					console.log(res.body);
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
-					res.body.err.should.be.equal('Password does not match');
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Password does not match');
 					done();
 				});
 		});
 
 
+		let newToken = null;
 		it('should allow to change password', done => {
 			chai.request(API)
 				.post('/change_password')
@@ -365,14 +364,24 @@ describe('User API', () => {
 					new_password_confirm: '321'
 				})
 				.end((err, res) => {
-					console.log(res.body);
-					res.should.have.status(200);
-					res.should.have.header('content-type', 'application/json; charset=utf-8');
+					checkHeaders(res, 200);
 					res.body.token.should.be.a('string');
+					newToken = res.body.token;
 					done();
 				});
 		});
 
-		// TODO Old token should be invalid after change password
+		it('should not return user info for old token', done => {
+			chai.request(API)
+				.post('/index')
+				.set('Authorization', 'Bearer ' + token)
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
+					done();
+				});
+		});
+
+		// TODO Tests for lock/unlock
 	});
 });

@@ -2,15 +2,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const shortid = require('shortid');
 const moment = require('moment');
+const farmhash = require('farmhash');
 
-
-// this would need to live in sails config
-const jwtSecret = 'SECRET123';
+// TODO Config
+const JWT_SECRET = 'SECRET123';
+const LOCK_INTERVAL_SEC = 120;
+const LOCK_TRY_COUNT = 5;
 
 function doesUsernameExist(email, done) {
 	User
 		.findOne({email: email})
-		.exec(function (err, user) {
+		.exec((err, user) => {
 			if (err) return done(err);
 			return done(null, !!user);
 		});
@@ -18,17 +20,17 @@ function doesUsernameExist(email, done) {
 
 function updateUserLockState(user, done) {
 	const now = moment().utc();
-	let lastFailure = null;
 
+	let prevFailure = null;
 	if (user.lastPasswordFailure) {
-		lastFailure = moment(user.lastPasswordFailure);
+		prevFailure = moment(user.lastPasswordFailure);
 	}
 
-	if (lastFailure !== null && now.diff(lastFailure, 'seconds') < 1800) {
+	if (prevFailure !== null && now.diff(prevFailure, 'seconds') < LOCK_INTERVAL_SEC) {
 		user.passwordFailures += 1;
 
 		// lock if this is the 4th incorrect attempt
-		if (user.passwordFailures > 3) { // TODO config
+		if (user.passwordFailures >= LOCK_TRY_COUNT) { // TODO config
 			user.locked = true;
 		}
 	}
@@ -38,14 +40,13 @@ function updateUserLockState(user, done) {
 	}
 
 	user.lastPasswordFailure = now.toDate();
-
 	user.save(done);
 }
 
 module.exports = {
 	createUser: (values) => {
 		return new Promise((resolve, reject) => {
-			doesUsernameExist(values.email, function (err, exists) {
+			doesUsernameExist(values.email, (err, exists) => {
 				if (err) {
 					return reject(err);
 				}
@@ -55,12 +56,10 @@ module.exports = {
 					return reject();
 				}
 
-				User.create(values).exec(function (createErr, user) {
+				User.create(values).exec((createErr, user) => {
 					if (createErr) return reject(createErr);
 
-					UserManager._generateUserToken({
-						id: user.id,
-					}, token => {
+					UserManager._generateUserToken(user, token => {
 						// todo: send welcome email
 						resolve(token);
 					});
@@ -69,10 +68,19 @@ module.exports = {
 		});
 	},
 
-	_generateUserToken: function (payload, done) {
+	_generateUserToken: function (user, done) {
+
+		// Password hash helps to invalidate token when password is changed
+		const passwordHash = farmhash.hash32(user.encryptedPassword);
+
+		const payload = {
+			id: user.id,
+			pwh: passwordHash
+		};
+
 		const token = jwt.sign(
 			payload,
-			jwtSecret,
+			JWT_SECRET,
 			{
 				expiresIn: '24h'	// 24 hours
 			}
@@ -82,19 +90,30 @@ module.exports = {
 
 
 	// TODO promisify
+	/**
+	 *
+	 * @param token
+	 * @param done
+	 */
 	authenticateUserByToken: function (token, done) {
 		jwt.verify(
 			token,
-			jwtSecret,
+			JWT_SECRET,
 			{},
 			(err, tokenData) => {
 				if (err) return done(err);
 
-				// TODO Check if user not locked
 				User
 					.findOne({id: tokenData.id})
-					.exec(function (err, user) {
+					.exec((err, user) => {
 						if (err) return done(err);
+						if (!user) return done(null, null);
+						if (user.locked) return done('locked');
+
+						const passwordHash = farmhash.hash32(user.encryptedPassword);
+						if (tokenData.pwh !== passwordHash) { // Old token
+							return done(err);
+						}
 						return done(null, user);
 					});
 			}
@@ -109,24 +128,22 @@ module.exports = {
 				.findOne({email: email})
 				.exec((err, user) => {
 					if (err) return reject(err);
-					if (!user || user.locked) return reject();
+					if (!user) return reject();
+					if (user.locked) return reject('locked');
 
-					user.validatePassword(password, function (vpErr, isValid) {
+					user.validatePassword(password, (vpErr, isValid) => {
 						if (vpErr) return reject(vpErr);
 
 						if (!isValid) {
-							return reject(false);
+							updateUserLockState(user, (err) => {
+								if (err) return reject(err);
+								return reject();
+							});
 
-							// TODO write a lock logic
-							// updateUserLockState(user, function (err) {
-							// 	if (err) return reject(err);
-							// 	return reject();
-							// });
+							return reject(false);
 						}
 						else {
-							UserManager._generateUserToken({
-								id: user.id,
-							}, token => {
+							UserManager._generateUserToken(user, token => {
 								resolve(token);
 							});
 						}
@@ -139,12 +156,12 @@ module.exports = {
 		return new Promise((resolve, reject) => {
 			User
 				.findOne({email})
-				.exec(function (err, user) {
+				.exec((err, user) => {
 					if (err) return reject(err);
 					if (!user) return reject();
 
 					user.resetToken = shortid.generate();
-					user.save(function (saveErr) {
+					user.save(saveErr => {
 						if (saveErr) return reject(saveErr);
 
 						// TODO: email the token to the user
@@ -164,9 +181,10 @@ module.exports = {
 				.findOne({email: email})
 				.exec((err, user) => {
 					if (err) return reject(err);
-					if (!user || user.locked) return reject();
+					if (!user) return reject();
+					if (user.locked) return reject('locked');
 
-					user.validatePassword(oldPassword, function (vpErr, isValid) {
+					user.validatePassword(oldPassword, (vpErr, isValid) => {
 						if (vpErr) return reject(vpErr);
 
 						if (!isValid) {
@@ -182,9 +200,7 @@ module.exports = {
 								user.lastPasswordFailure = null;
 								user.save();
 
-								UserManager._generateUserToken({
-									id: user.id,
-								}, token => {
+								UserManager._generateUserToken(user, token => {
 									resolve(token);
 								});
 							});
