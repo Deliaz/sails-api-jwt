@@ -7,6 +7,8 @@
  *
  */
 
+const API_ERRORS = require('../constants/APIErrors');
+
 module.exports = function (req, res, next) {
 	let token = null;
 
@@ -28,17 +30,23 @@ module.exports = function (req, res, next) {
 		return res.badRequest(Utils.jsonErr('Format is "Authorization: Bearer [token]"'));
 	}
 
-	UserManager.authenticateUserByToken(token, function (err, user) {
-		if (err || !user) {
-			return res.badRequest(Utils.jsonErr('Invalid token'));
-		}
-
-		req.userInfo = {
-			id: user.id,
-			email: user.email
-		};
-		next();
-	});
-
+	UserManager
+		.authenticateUserByToken(token)
+		.then(user => {
+			req.userInfo = {
+				id: user.id,
+				email: user.email
+			};
+			next();
+		})
+		.catch(err => {
+			switch (err) {
+				case API_ERRORS.INACTIVE_TOKEN:
+				case API_ERRORS.USER_NOT_FOUND:
+				case API_ERRORS.USER_LOCKED:
+				default:
+					return res.badRequest(Utils.jsonErr('Invalid token'));
+			}
+		});
 };
 

@@ -6,6 +6,7 @@
  */
 
 const API_ERRORS = require('../constants/APIErrors');
+const validator = require('validator');
 
 module.exports = {
 	index: function (req, res) {
@@ -22,9 +23,8 @@ module.exports = {
 		const password = req.body.password;
 		const passwordConfirm = req.body.password_confirm;
 
-		if (!email) {
-			// TODO Email validation
-			return res.badRequest(Utils.jsonErr('Email is required'));
+		if (!email || !validator.isEmail(email)) {
+			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
 		if (password !== passwordConfirm) {
@@ -55,6 +55,12 @@ module.exports = {
 		const email = req.body.email;
 		const password = req.body.password;
 
+		if (!email || !validator.isEmail(email)) {
+			return res.badRequest(Utils.jsonErr('Invalid email'));
+		}
+
+		//TODO what if there is no password here?
+
 		UserManager.authenticateUserByPassword(email, password)
 			.then(token => {
 				res.ok({token});
@@ -76,8 +82,8 @@ module.exports = {
 	forgotPassword: function (req, res) {
 		const email = req.body.email;
 
-		if (!email) {
-			return res.badRequest(Utils.jsonErr('Email is required'));
+		if (!email || !validator.isEmail(email)) {
+			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
 		UserManager
@@ -100,8 +106,8 @@ module.exports = {
 		const newPasswordConfirm = req.body.new_password_confirm;
 
 
-		if (!email) {
-			return res.badRequest(Utils.jsonErr('Email is required'));
+		if (!email || !validator.isEmail(email)) {
+			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
 		if (!oldPassword) {
@@ -137,8 +143,8 @@ module.exports = {
 		const newPassword = req.body.new_password;
 		const newPasswordConfirm = req.body.new_password_confirm;
 
-		if (!email) {
-			return res.badRequest(Utils.jsonErr('Email is required')); //TODO test
+		if (!email || !validator.isEmail(email)) {
+			return res.badRequest(Utils.jsonErr('Invalid email')); // TODO test
 		}
 
 		if (!resetToken) {

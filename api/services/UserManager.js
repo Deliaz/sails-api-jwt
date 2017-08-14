@@ -90,40 +90,37 @@ module.exports = {
 	},
 
 
-	// TODO promisify
 	/**
-	 *
+	 * Authenticates user by a JWT token.
+	 * Uses in JWT Policy
 	 * @param token
-	 * @param done
+	 * @returns {Promise}
 	 */
-	authenticateUserByToken: function (token, done) {
-		jwt.verify(
-			token,
-			JWT_SECRET,
-			{},
-			(err, tokenData) => {
-				if (err) return done(err);
+	authenticateUserByToken: function (token) {
+		return new Promise((resolve, reject) => {
+			jwt.verify(token, JWT_SECRET, {}, (err, tokenData) => {
+					if (err) return reject(err); // JWT parse error
 
 				User
 					.findOne({id: tokenData.id})
 					.exec((err, user) => {
-						if (err) return done(err);
-						if (!user) return done(null, null);
-						if (user.locked) return done('locked');
+						if (err) return reject(err); // Query error
+						if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
+						if (user.locked) return reject(API_ERRORS.USER_LOCKED);
 
 						const passwordHash = farmhash.hash32(user.encryptedPassword);
-						if (tokenData.pwh !== passwordHash) { // Old token
-							return done(err);
+						if (tokenData.pwh !== passwordHash) { // Old token, built with inactive password
+							return reject(API_ERRORS.INACTIVE_TOKEN);
 						}
-						return done(null, user);
+						return resolve(user);
 					});
-			}
-		);
-
-
+				}
+			);
+		});
 	},
 
-	authenticateUserByPassword: function (email, password) {
+
+	validatePassword(email, password) {
 		return new Promise((resolve, reject) => {
 			User
 				.findOne({email: email})
@@ -134,20 +131,30 @@ module.exports = {
 
 					user.validatePassword(password, (validErr, isValid) => {
 						if (validErr) return reject(validErr);
-
-						if (!isValid) {
-							updateUserLockState(user, saveErr => {
-								if (saveErr) return reject(saveErr);
-							});
-							return reject(API_ERRORS.INVALID_EMAIL_PASSWORD);
-						}
-						else {
-							UserManager._generateUserToken(user, token => {
-								resolve(token);
-							});
-						}
+						resolve({isValid, user});
 					});
-				});
+				})
+		});
+	},
+
+	authenticateUserByPassword: function (email, password) {
+		return new Promise((resolve, reject) => {
+			UserManager
+				.validatePassword(email, password)
+				.then(({isValid, user}) => {
+					if (!isValid) {
+						updateUserLockState(user, saveErr => {
+							if (saveErr) return reject(saveErr);
+						});
+						return reject(API_ERRORS.INVALID_EMAIL_PASSWORD);
+					}
+					else {
+						UserManager._generateUserToken(user, token => {
+							resolve(token);
+						});
+					}
+				})
+				.catch(reject);
 		});
 	},
 
@@ -170,40 +177,30 @@ module.exports = {
 		});
 	},
 
-	changePassword: function (email, oldPassword, newPassword) {
+	changePassword: function (email, currentPassword, newPassword) {
 		return new Promise((resolve, reject) => {
+			UserManager
+				.validatePassword(email, currentPassword)
+				.then(({isValid, user}) => {
+					if (!isValid) {
+						return reject(API_ERRORS.INVALID_PASSWORD);
+					}
+					else {
+						user.setPassword(newPassword, err => {
+							if (err) return reject(err); // Generate hash error
 
-			// TODO almost same as in authenticateUserByPassword
-			User
-				.findOne({email: email})
-				.exec((err, user) => {
-					if (err) return reject(err); // Query error
-					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
-					if (user.locked) return reject(API_ERRORS.USER_LOCKED);
+							user.resetToken = null;
+							user.passwordFailures = 0;
+							user.lastPasswordFailure = null;
+							user.save();
 
-					user.validatePassword(oldPassword, (vpErr, isValid) => {
-						if (vpErr) return reject(vpErr);
-
-						if (!isValid) {
-							return reject(API_ERRORS.INVALID_PASSWORD);
-						}
-						else {
-
-							user.setPassword(newPassword, err => {
-								if (err) return reject(err);
-
-								user.resetToken = null;
-								user.passwordFailures = 0;
-								user.lastPasswordFailure = null;
-								user.save();
-
-								UserManager._generateUserToken(user, token => {
-									resolve(token);
-								});
+							UserManager._generateUserToken(user, token => {
+								resolve(token);
 							});
-						}
-					});
-				});
+						});
+					}
+				})
+				.catch(reject);
 		});
 	},
 

@@ -61,7 +61,23 @@ describe('User API', () => {
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
-					res.body.err_msg.should.be.equal('Email is required');
+					res.body.err_msg.should.be.equal('Invalid email');
+					token = res.body.token;
+					done();
+				});
+		});
+
+		it('should not create a user with bad email', done => {
+			chai.request(API)
+				.post('/create')
+				.send({
+					email: 'aaa---+++@@@',
+					password: '123',
+					password_confirm: '123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
 					token = res.body.token;
 					done();
 				});
@@ -223,7 +239,7 @@ describe('User API', () => {
 				.end((err, res) => {
 					checkHeaders(res, 400);
 
-					res.body.err_msg.should.be.equal('Email is required');
+					res.body.err_msg.should.be.equal('Invalid email');
 					done();
 				});
 		});
