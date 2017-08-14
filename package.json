@@ -18,8 +18,7 @@
 	"scripts": {
 		"debug": "node debug app.js",
 		"start": "node app.js",
-		"test": "nyc mocha --ui bdd test/*.test.js",
-		"coverage": "nyc report"
+		"test": "nyc mocha --ui bdd test/*.test.js"
 	},
 	"main": "app.js",
 	"repository": {

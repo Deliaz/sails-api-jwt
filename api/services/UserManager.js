@@ -4,6 +4,8 @@ const shortid = require('shortid');
 const moment = require('moment');
 const farmhash = require('farmhash');
 
+const API_ERRORS = require('../constants/APIErrors');
+
 // TODO Config
 const JWT_SECRET = 'SECRET123';
 const LOCK_INTERVAL_SEC = 120;
@@ -30,7 +32,7 @@ function updateUserLockState(user, done) {
 		user.passwordFailures += 1;
 
 		// lock if this is the 4th incorrect attempt
-		if (user.passwordFailures >= LOCK_TRY_COUNT) { // TODO config
+		if (user.passwordFailures >= LOCK_TRY_COUNT) {
 			user.locked = true;
 		}
 	}
@@ -52,8 +54,7 @@ module.exports = {
 				}
 
 				if (exists) {
-					// todo: a better return result
-					return reject();
+					return reject(API_ERRORS.EMAIL_IN_USE);
 				}
 
 				User.create(values).exec((createErr, user) => {
@@ -128,19 +129,17 @@ module.exports = {
 				.findOne({email: email})
 				.exec((err, user) => {
 					if (err) return reject(err);
-					if (!user) return reject();
-					if (user.locked) return reject('locked');
+					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
+					if (user.locked) return reject(API_ERRORS.USER_LOCKED);
 
-					user.validatePassword(password, (vpErr, isValid) => {
-						if (vpErr) return reject(vpErr);
+					user.validatePassword(password, (validErr, isValid) => {
+						if (validErr) return reject(validErr);
 
 						if (!isValid) {
-							updateUserLockState(user, (err) => {
-								if (err) return reject(err);
-								return reject();
+							updateUserLockState(user, saveErr => {
+								if (saveErr) return reject(saveErr);
 							});
-
-							return reject(false);
+							return reject(API_ERRORS.INVALID_EMAIL_PASSWORD);
 						}
 						else {
 							UserManager._generateUserToken(user, token => {
@@ -157,16 +156,14 @@ module.exports = {
 			User
 				.findOne({email})
 				.exec((err, user) => {
-					if (err) return reject(err);
-					if (!user) return reject();
+					if (err) return reject(err); // Query error
+					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
 
 					user.resetToken = shortid.generate();
 					user.save(saveErr => {
 						if (saveErr) return reject(saveErr);
 
 						// TODO: email the token to the user
-						// console.log('Reset Token', user.resetToken);
-
 						resolve();
 					});
 				});
@@ -180,15 +177,15 @@ module.exports = {
 			User
 				.findOne({email: email})
 				.exec((err, user) => {
-					if (err) return reject(err);
-					if (!user) return reject();
-					if (user.locked) return reject('locked');
+					if (err) return reject(err); // Query error
+					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
+					if (user.locked) return reject(API_ERRORS.USER_LOCKED);
 
 					user.validatePassword(oldPassword, (vpErr, isValid) => {
 						if (vpErr) return reject(vpErr);
 
 						if (!isValid) {
-							return reject('invalid_pass');
+							return reject(API_ERRORS.INVALID_PASSWORD);
 						}
 						else {
 
@@ -215,8 +212,10 @@ module.exports = {
 			User
 				.findOne({email, resetToken})
 				.exec((err, user) => {
-					if (err) return reject(err);
-					if (!user) return reject();
+					if (err) return reject(err); // Query error
+					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
+
+					// TODO Check reset token validity
 
 					user.setPassword(newPassword, err => {
 						if (err) return reject(err);

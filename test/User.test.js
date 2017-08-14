@@ -52,6 +52,21 @@ describe('User API', () => {
 				});
 		});
 
+		it('should not create a user without email', done => {
+			chai.request(API)
+				.post('/create')
+				.send({
+					password: '123',
+					password_confirm: '123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Email is required');
+					token = res.body.token;
+					done();
+				});
+		});
+
 		it('should create a new user', done => {
 			chai.request(API)
 				.post('/create')
@@ -331,7 +346,7 @@ describe('User API', () => {
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
-					res.body.err_msg.should.be.equal('Invalid email');
+					res.body.err_msg.should.be.equal('Email not found');
 					done();
 				});
 		});

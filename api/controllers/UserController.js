@@ -5,6 +5,8 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
+const API_ERRORS = require('../constants/APIErrors');
+
 module.exports = {
 	index: function (req, res) {
 
@@ -20,7 +22,13 @@ module.exports = {
 		const password = req.body.password;
 		const passwordConfirm = req.body.password_confirm;
 
+		if (!email) {
+			// TODO Email validation
+			return res.badRequest(Utils.jsonErr('Email is required'));
+		}
+
 		if (password !== passwordConfirm) {
+			// TODO Password min requirements
 			return res.badRequest(Utils.jsonErr('Password does not match'));
 		}
 
@@ -35,7 +43,7 @@ module.exports = {
 				});
 			})
 			.catch(err => {
-				if (!err) {
+				if (err === API_ERRORS.EMAIL_IN_USE) {
 					return res.badRequest(Utils.jsonErr('This email is already in use'));
 				}
 				return res.serverError(Utils.jsonErr(err));
@@ -52,12 +60,17 @@ module.exports = {
 				res.ok({token});
 			})
 			.catch(err => {
-				if (!err) return res.badRequest(Utils.jsonErr('Invalid email or password'));
-				if (err === 'locked') {
-					return res.forbidden(Utils.jsonErr('Account locked'));
+				switch (err) {
+					case API_ERRORS.INVALID_EMAIL_PASSWORD:
+					case API_ERRORS.USER_NOT_FOUND:
+						return res.badRequest(Utils.jsonErr('Invalid email or password'));
+						break;
+					case API_ERRORS.USER_LOCKED:
+						return res.forbidden(Utils.jsonErr('Account locked'));
+					default:
+						return res.serverError(Utils.jsonErr(err));
 				}
-				res.serverError(Utils.jsonErr(err));
-			})
+			});
 	},
 
 	forgotPassword: function (req, res) {
@@ -73,8 +86,10 @@ module.exports = {
 				res.ok({message: 'Check your email'});
 			})
 			.catch(err => {
-				if (!err) return res.notFound(Utils.jsonErr('User not found'));
-				res.serverError(Utils.jsonErr(err));
+				if (err === API_ERRORS.USER_NOT_FOUND) {
+					return res.notFound(Utils.jsonErr('User not found'));
+				}
+				return res.serverError(Utils.jsonErr(err));
 			})
 	},
 
@@ -103,9 +118,16 @@ module.exports = {
 				return res.ok({token});
 			})
 			.catch(err => {
-				if (!err) return res.badRequest(Utils.jsonErr('Invalid email')); // Requested user not found
-				if (err === 'invalid_pass') return res.badRequest(Utils.jsonErr('Invalid password'));
-				res.serverError(Utils.jsonErr(err));
+				switch (err) {
+					case API_ERRORS.USER_NOT_FOUND:
+						return res.badRequest(Utils.jsonErr('Email not found'));
+					case API_ERRORS.USER_LOCKED:
+						return res.forbidden(Utils.jsonErr('Email locked')); // TODO Test
+					case API_ERRORS.INVALID_PASSWORD:
+						return res.badRequest(Utils.jsonErr('Invalid password'));
+					default:
+						return res.serverError(Utils.jsonErr(err));
+				}
 			});
 	},
 
@@ -133,9 +155,11 @@ module.exports = {
 				res.ok({message: 'Done'});
 			})
 			.catch(err => {
-				if (!err) return res.badRequest(Utils.jsonErr('Invalid email'));
-				console.log('Error: ', err);
-				res.json(500);
+				if (err === API_ERRORS.USER_NOT_FOUND) {
+					// We show invalid email instead of User Not Found
+					return res.badRequest(Utils.jsonErr('Invalid email'));
+				}
+				return res.serverError(Utils.jsonErr(err));
 			})
 	},
 };

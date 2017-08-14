@@ -1,7 +1,7 @@
 /**
  * User.js
  *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
+ * @description :: User model
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
@@ -68,7 +68,9 @@ module.exports = {
 				.then(match => {
 					done(null, !!match);
 				})
-				.catch(err => done(err))
+				.catch(err => {
+					done(err, false);
+				});
 		},
 
 		setPassword: function (password, done) {
