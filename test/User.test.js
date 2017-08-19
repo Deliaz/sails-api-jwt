@@ -167,7 +167,7 @@ describe('User API', () => {
 				});
 		});
 
-		it('should not login for unknow email', done => {
+		it('should not login for unknown email', done => {
 			chai.request(API)
 				.post('/login')
 				.send({
@@ -541,13 +541,15 @@ describe('User API', () => {
 	});
 
 	describe('Lock account', () => {
+
 		// TODO lock timeout
-		const N = 6;
-		it(`should lock account after ${N} times`, done => {
+
+		const N = 5;
+		it(`should lock account after ${N} times`, function(done) {
+			this.timeout(3000);
 
 			const promises = [];
-
-			for (let i = 0; i < N - 1; i++) {
+			for (let i = 0; i < N; i++) {
 				promises.push(new Promise((resolve) => {
 					setTimeout(() => {
 						chai.request(API)
@@ -557,7 +559,7 @@ describe('User API', () => {
 								password: '000000'
 							})
 							.end(resolve);
-					}, i * 100);
+					}, i * 150);
 				}));
 			}
 
