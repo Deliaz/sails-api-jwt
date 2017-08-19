@@ -5,3 +5,5 @@ before_script:
   - npm install grunt # fixes sails.lift() grunt error
 script:
   - npm test
+after_success:
+  - npm run coverage

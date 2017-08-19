@@ -20,7 +20,8 @@
   "scripts": {
     "debug": "node debug app.js",
     "start": "node app.js",
-    "test": "nyc mocha --ui bdd test/*.test.js"
+	  "test": "nyc mocha --ui bdd test/*.test.js",
+	  "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "main": "app.js",
   "repository": {
