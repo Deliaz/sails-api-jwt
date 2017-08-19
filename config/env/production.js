@@ -12,6 +12,8 @@
 
 module.exports = {
 
+	jwt_secret: 'phie6vaecheliekeeru8aiy4shuafiJ0' // Change it for your own JWT secret
+
   /***************************************************************************
    * Set the default database connection for models in the production        *
    * environment (see config/connections.js and config/models.js )           *

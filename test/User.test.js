@@ -36,11 +36,6 @@ describe('User API', () => {
 	let token;
 
 	describe('Creating and auth', () => {
-		const regInfo = {
-			email: 'a@gmail.com',
-			password: '123',
-			password_confirm: '123'
-		};
 
 		it('should return auth error for /index', done => {
 			chai.request(API)
@@ -56,13 +51,28 @@ describe('User API', () => {
 			chai.request(API)
 				.post('/create')
 				.send({
+					password: 'abc123',
+					password_confirm: 'abc123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
+					done();
+				});
+		});
+
+
+		it('should not create with invalid password', done => {
+			chai.request(API)
+				.post('/create')
+				.send({
+					email: 'a@gmail.com',
 					password: '123',
 					password_confirm: '123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
-					res.body.err_msg.should.be.equal('Invalid email');
-					token = res.body.token;
+					res.body.err_msg.should.be.equal('Password must be 6-24 characters, including letters and digits');
 					done();
 				});
 		});
@@ -72,13 +82,12 @@ describe('User API', () => {
 				.post('/create')
 				.send({
 					email: 'aaa---+++@@@',
-					password: '123',
-					password_confirm: '123'
+					password: 'abc123',
+					password_confirm: 'abc123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
 					res.body.err_msg.should.be.equal('Invalid email');
-					token = res.body.token;
 					done();
 				});
 		});
@@ -86,7 +95,11 @@ describe('User API', () => {
 		it('should create a new user', done => {
 			chai.request(API)
 				.post('/create')
-				.send(regInfo)
+				.send({
+					email: 'a@gmail.com',
+					password: 'abc123',
+					password_confirm: 'abc123'
+				})
 				.end((err, res) => {
 					checkHeaders(res, 201);
 
@@ -100,11 +113,28 @@ describe('User API', () => {
 		it('should not create a new user with the same info', done => {
 			chai.request(API)
 				.post('/create')
-				.send(regInfo)
+				.send({
+					email: 'a@gmail.com',
+					password: 'abc123',
+					password_confirm: 'abc123'
+				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
 					res.body.err_msg.should.be.a('string');
 					res.body.err_msg.should.be.equal('This email is already in use');
+					done();
+				});
+		});
+
+		it('should not login without password', done => {
+			chai.request(API)
+				.post('/login')
+				.send({
+					email: 'a@gmail.com'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email or password');
 					done();
 				});
 		});
@@ -114,7 +144,7 @@ describe('User API', () => {
 				.post('/login')
 				.send({
 					email: 'a@gmail.com',
-					password: '123'
+					password: 'abc123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 200);
@@ -128,7 +158,7 @@ describe('User API', () => {
 				.post('/login')
 				.send({
 					email: 'aaa@gmail.com',
-					password: '123'
+					password: 'abc123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -254,7 +284,7 @@ describe('User API', () => {
 			resetToken = db.data.user[0].resetToken;
 		});
 
-		it('should reset password with reset token', done => {
+		it('should not reset password to invalid password', done => {
 			chai.request(API)
 				.post('/reset_password')
 				.send({
@@ -262,6 +292,69 @@ describe('User API', () => {
 					reset_token: resetToken,
 					new_password: '111',
 					new_password_confirm: '111'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Password must be 6-24 characters, including letters and digits');
+					done();
+				});
+		});
+
+		it('should not reset password to invalid password', done => {
+			chai.request(API)
+				.post('/reset_password')
+				.send({
+					email: 'aaa+++@@@@',
+					reset_token: resetToken,
+					new_password: 'aaa111',
+					new_password_confirm: 'aaa111'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
+					done();
+				});
+		});
+
+		it('should not reset password without reset token', done => {
+			chai.request(API)
+				.post('/reset_password')
+				.send({
+					email: 'a@gmail.com',
+					new_password: 'aaa111',
+					new_password_confirm: 'aaa111'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Reset token is required');
+					done();
+				});
+		});
+
+		it('should not reset password without reset token', done => {
+			chai.request(API)
+				.post('/reset_password')
+				.send({
+					email: 'a@gmail.com',
+					reset_token: resetToken,
+					new_password: 'aaa111',
+					new_password_confirm: 'bbb222'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Password does not match');
+					done();
+				});
+		});
+
+		it('should reset password with reset token', done => {
+			chai.request(API)
+				.post('/reset_password')
+				.send({
+					email: 'a@gmail.com',
+					reset_token: resetToken,
+					new_password: 'aaa111',
+					new_password_confirm: 'aaa111'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 200);
@@ -286,7 +379,7 @@ describe('User API', () => {
 				.post('/login')
 				.send({
 					email: 'a@gmail.com',
-					password: '111'
+					password: 'aaa111'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 200);
@@ -304,7 +397,7 @@ describe('User API', () => {
 				.post('/login')
 				.send({
 					email: 'a@gmail.com',
-					password: '123'
+					password: 'abc123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -316,14 +409,46 @@ describe('User API', () => {
 
 
 	describe('Password change', () => {
+		it('should not allow to change password to invalid password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.send({
+					email: 'a@gmail.com',
+					password: 'aaa111', // changed by reset token
+					new_password: '321',
+					new_password_confirm: '321'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
+					done();
+				});
+		});
+
 		it('should not allow to change password without auth header', done => {
 			chai.request(API)
 				.post('/change_password')
 				.send({
 					email: 'a@gmail.com',
+					password: 'aaa111', // changed by reset token
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.a('string');
+					done();
+				});
+		});
+
+		it('should not allow to change password to invalid password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.send({
+					email: 'a@gmail.com',
 					password: '111', // changed by reset token
-					new_password: '321',
-					new_password_confirm: '321'
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -338,9 +463,9 @@ describe('User API', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({
 					email: 'a@gmail.com',
-					password: '123',
-					new_password: '321',
-					new_password_confirm: '321'
+					password: 'abc123',
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -356,9 +481,9 @@ describe('User API', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({
 					email: 'bbb@gmail.com',
-					password: '123',
-					new_password: '321',
-					new_password_confirm: '321'
+					password: 'abc123',
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -373,7 +498,7 @@ describe('User API', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({
 					email: 'a@gmail.com',
-					password: '123'
+					password: 'abc123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -390,9 +515,9 @@ describe('User API', () => {
 				.set('Authorization', 'Bearer ' + token)
 				.send({
 					email: 'a@gmail.com',
-					password: '111',
-					new_password: '321',
-					new_password_confirm: '321'
+					password: 'aaa111',
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
 				})
 				.end((err, res) => {
 					checkHeaders(res, 200);
@@ -413,6 +538,63 @@ describe('User API', () => {
 				});
 		});
 
-		// TODO Tests for lock/unlock
+	});
+
+	describe('Lock account', () => {
+		// TODO lock timeout
+		const N = 6;
+		it(`should lock account after ${N} times`, done => {
+
+			const promises = [];
+
+			for (let i = 0; i < N - 1; i++) {
+				promises.push(new Promise((resolve) => {
+					setTimeout(() => {
+						chai.request(API)
+							.post('/login')
+							.send({
+								email: 'a@gmail.com',
+								password: '000000'
+							})
+							.end(resolve);
+					}, i * 100);
+				}));
+			}
+
+			Promise
+				.all(promises)
+				.then(() => {
+					chai.request(API)
+						.post('/login')
+						.send({
+							email: 'a@gmail.com',
+							password: '000000'
+						})
+						.end((err, res) => {
+							checkHeaders(res, 403);
+							res.body.err_msg.should.be.equal('Account locked');
+							done();
+						});
+				});
+
+		});
+
+
+		it('should not allow to change password for locked account', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: 'xyz123',
+					new_password: 'npm333',
+					new_password_confirm: 'npm333'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid token'); // Refused by JWT auth policy
+					done();
+				});
+		});
 	});
 });

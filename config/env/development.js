@@ -21,4 +21,6 @@ module.exports = {
   //   connection: 'someMongodbServer'
   // }
 
+  jwt_secret: 'SECRET123'
+
 };

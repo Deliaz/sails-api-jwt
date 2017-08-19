@@ -6,8 +6,6 @@ const farmhash = require('farmhash');
 
 const API_ERRORS = require('../constants/APIErrors');
 
-// TODO Config
-const JWT_SECRET = 'SECRET123';
 const LOCK_INTERVAL_SEC = 120;
 const LOCK_TRY_COUNT = 5;
 
@@ -81,7 +79,7 @@ module.exports = {
 
 		const token = jwt.sign(
 			payload,
-			JWT_SECRET,
+			sails.config.jwt_secret,
 			{
 				expiresIn: '24h'	// 24 hours
 			}
@@ -98,7 +96,7 @@ module.exports = {
 	 */
 	authenticateUserByToken: function (token) {
 		return new Promise((resolve, reject) => {
-			jwt.verify(token, JWT_SECRET, {}, (err, tokenData) => {
+			jwt.verify(token, sails.config.jwt_secret, {}, (err, tokenData) => {
 					if (err) return reject(err); // JWT parse error
 
 				User

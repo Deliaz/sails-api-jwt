@@ -7,6 +7,19 @@
 
 const API_ERRORS = require('../constants/APIErrors');
 const validator = require('validator');
+const passValidator = require('password-validator');
+
+const passSchema = new passValidator();
+const passMinLen = 6;
+const passMaxLen = 24;
+
+// See ref https://github.com/tarunbatra/password-validator
+passSchema
+	.is().min(passMinLen)
+	.is().max(passMaxLen)
+	.has().letters()
+	.has().lowercase()
+	.has().digits();
 
 module.exports = {
 	index: function (req, res) {
@@ -28,8 +41,11 @@ module.exports = {
 		}
 
 		if (password !== passwordConfirm) {
-			// TODO Password min requirements
 			return res.badRequest(Utils.jsonErr('Password does not match'));
+		}
+
+		if (!passSchema.validate(password)) {
+			return res.badRequest(Utils.jsonErr('Password must be 6-24 characters, including letters and digits'));
 		}
 
 		UserManager
@@ -59,7 +75,9 @@ module.exports = {
 			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
-		//TODO what if there is no password here?
+		if (!password) {
+			return res.badRequest(Utils.jsonErr('Invalid email or password'));
+		}
 
 		UserManager.authenticateUserByPassword(email, password)
 			.then(token => {
@@ -101,7 +119,7 @@ module.exports = {
 
 	changePassword: function (req, res) {
 		const email = req.body.email;
-		const oldPassword = req.body.password;
+		const currentPassword = req.body.password;
 		const newPassword = req.body.new_password;
 		const newPasswordConfirm = req.body.new_password_confirm;
 
@@ -110,7 +128,7 @@ module.exports = {
 			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
-		if (!oldPassword) {
+		if (!currentPassword) {
 			return res.badRequest(Utils.jsonErr('Current password is required'));
 		}
 
@@ -118,8 +136,12 @@ module.exports = {
 			return res.badRequest(Utils.jsonErr('Password does not match'));
 		}
 
+		if (!passSchema.validate(currentPassword)) {
+			return res.badRequest(Utils.jsonErr('Password must be 6-24 characters, including letters and digits'));
+		}
+
 		UserManager
-			.changePassword(email, oldPassword, newPassword)
+			.changePassword(email, currentPassword, newPassword)
 			.then(function (token) {
 				return res.ok({token});
 			})
@@ -128,7 +150,7 @@ module.exports = {
 					case API_ERRORS.USER_NOT_FOUND:
 						return res.badRequest(Utils.jsonErr('Email not found'));
 					case API_ERRORS.USER_LOCKED:
-						return res.forbidden(Utils.jsonErr('Email locked')); // TODO Test
+						return res.forbidden(Utils.jsonErr('Account locked'));
 					case API_ERRORS.INVALID_PASSWORD:
 						return res.badRequest(Utils.jsonErr('Invalid password'));
 					default:
@@ -144,15 +166,19 @@ module.exports = {
 		const newPasswordConfirm = req.body.new_password_confirm;
 
 		if (!email || !validator.isEmail(email)) {
-			return res.badRequest(Utils.jsonErr('Invalid email')); // TODO test
+			return res.badRequest(Utils.jsonErr('Invalid email'));
 		}
 
 		if (!resetToken) {
-			return res.badRequest(Utils.jsonErr('Reset token is required')); //TODO test
+			return res.badRequest(Utils.jsonErr('Reset token is required'));
 		}
 
 		if (!newPassword || newPassword !== newPasswordConfirm) {
-			return res.badRequest(Utils.jsonErr('Password does not match')); //TODO test
+			return res.badRequest(Utils.jsonErr('Password does not match'));
+		}
+
+		if (!passSchema.validate(newPassword)) {
+			return res.badRequest(Utils.jsonErr('Password must be 6-24 characters, including letters and digits'));
 		}
 
 		UserManager
