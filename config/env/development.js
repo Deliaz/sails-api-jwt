@@ -12,6 +12,8 @@
 
 module.exports = {
 
+	jwt_secret: 'SECRET123'
+
   /***************************************************************************
    * Set the default database connection for models in the development       *
    * environment (see config/connections.js and config/models.js )           *
@@ -20,7 +22,5 @@ module.exports = {
   // models: {
   //   connection: 'someMongodbServer'
   // }
-
-  jwt_secret: 'SECRET123'
 
 };

@@ -31,7 +31,7 @@ or, if you have Sails globally:
 ```
 sails lift
 ```
-For security reasons, please change __JWT_SECRET__ in `config/env/development.js`. 
+For security reasons, please change __JWT_SECRET__ in `api/config/env/development.js`. 
 
 
 
@@ -56,9 +56,9 @@ To pass a JWT token use `Authorization` header:
 Authorization: Bearer <JWT Token>
 ```
 
-### API methods description
+## API methods description
 For some reasons I do not use REST. Shortcuts also disabled by default 
-(see `config/blueprints.js`).
+(see `api/config/blueprints.js`).
 
 #### `/user/create` 
 Creates a new user. Requirements for the password: length is 6-24, use letters and digits. 
@@ -95,7 +95,7 @@ __response__
 	"token": "<JWT Token>"
 }
 ```
-N.B. Account will be blocked after `5` fails. 
+N.B. Account will be blocked after `5` fails in `2 mins` (configurable in `api/services/UserManager.js`). 
 
 #### `/user/change_password`
 Changes user password. User should be authorized.   
