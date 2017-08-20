@@ -1,9 +1,16 @@
 {
   "name": "sails-api-jwt",
-  "private": true,
+  "private": false,
   "version": "1.0.0",
-  "description": "JWT API Sails.js",
-  "keywords": [],
+  "description": "An example implementation of JWT-based API for user registration and authorization.",
+  "keywords": [
+	  "Sails",
+	  "Sails.js",
+	  "JWT",
+	  "JSON Web Token",
+	  "authorization",
+	  "API"
+  ],
   "dependencies": {
     "bcrypt": "^1.0.2",
     "farmhash": "^2.0.0",
@@ -29,7 +36,7 @@
     "url": "https://github.com/Deliaz/sails-api-jwt.git"
   },
   "author": "deliaz",
-  "license": "",
+  "license": "MIT",
   "devDependencies": {
     "chai": "^4.1.1",
     "chai-http": "^3.0.0",
