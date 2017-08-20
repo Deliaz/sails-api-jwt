@@ -18,7 +18,6 @@ passSchema
 	.is().min(passMinLen)
 	.is().max(passMaxLen)
 	.has().letters()
-	.has().lowercase()
 	.has().digits();
 
 module.exports = {
