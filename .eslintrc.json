@@ -1,0 +1,51 @@
+{
+	"env": {
+		"browser": false,
+		"commonjs": true,
+		"es6": true,
+		"node": true
+	},
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaFeatures": {
+			"experimentalObjectRestSpread": true
+		},
+		"sourceType": "module"
+	},
+	"rules": {
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1
+			}
+		],
+		"linebreak-style": 0,
+		"quotes": [
+			"error",
+			"single"
+		],
+		"semi": [
+			"error",
+			"always"
+		],
+		"no-mixed-spaces-and-tabs": [
+			"error",
+			"smart-tabs"
+		],
+		"no-console": "off",
+		"no-var": "error",
+		"no-cond-assign": "off",
+		"one-var": [
+			"error",
+			"never"
+		]
+	},
+	"globals": {
+		"sails": true,
+		"UserController": true,
+		"User": true,
+		"UserManager": true,
+		"Utils": true
+	}
+}

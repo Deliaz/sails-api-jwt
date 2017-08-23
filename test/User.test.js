@@ -1,3 +1,6 @@
+// Defining ESLint environments
+/* eslint-env node, mocha */
+
 const sails = require('sails');
 const chai = require('chai');
 chai.should();
@@ -77,6 +80,22 @@ describe('User API', () => {
 				});
 		});
 
+
+		it('should not create with bad password confirm', done => {
+			chai.request(API)
+				.post('/create')
+				.send({
+					email: 'a@gmail.com',
+					password: 'aaa123',
+					password_confirm: 'bbb123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Password does not match');
+					done();
+				});
+		});
+
 		it('should not create a user with bad email', done => {
 			chai.request(API)
 				.post('/create')
@@ -135,6 +154,19 @@ describe('User API', () => {
 				.end((err, res) => {
 					checkHeaders(res, 400);
 					res.body.err_msg.should.be.equal('Invalid email or password');
+					done();
+				});
+		});
+
+		it('should not login with invalid email', done => {
+			chai.request(API)
+				.post('/login')
+				.send({
+					email: 'aaaa+++@@@fff'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
 					done();
 				});
 		});
@@ -300,11 +332,28 @@ describe('User API', () => {
 				});
 		});
 
-		it('should not reset password to invalid password', done => {
+		it('should not reset password with invalid email', done => {
 			chai.request(API)
 				.post('/reset_password')
 				.send({
 					email: 'aaa+++@@@@',
+					reset_token: resetToken,
+					new_password: 'aaa111',
+					new_password_confirm: 'aaa111'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
+					done();
+				});
+		});
+
+
+		it('should not reset password with unknown email', done => {
+			chai.request(API)
+				.post('/reset_password')
+				.send({
+					email: 'ccc@gmail.com',
 					reset_token: resetToken,
 					new_password: 'aaa111',
 					new_password_confirm: 'aaa111'
@@ -331,7 +380,7 @@ describe('User API', () => {
 				});
 		});
 
-		it('should not reset password without reset token', done => {
+		it('should not reset password with bad password confirm', done => {
 			chai.request(API)
 				.post('/reset_password')
 				.send({
@@ -492,13 +541,49 @@ describe('User API', () => {
 				});
 		});
 
-		it('should not allow to change password without conform password', done => {
+		it('should not allow to change password for invalid email', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'aaa@@@++++',
+					password: 'abc123',
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Invalid email');
+					done();
+				});
+		});
+
+
+		it('should not allow to change password without current password', done => {
 			chai.request(API)
 				.post('/change_password')
 				.set('Authorization', 'Bearer ' + token)
 				.send({
 					email: 'a@gmail.com',
-					password: 'abc123'
+					new_password: 'xyz123',
+					new_password_confirm: 'xyz123'
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Current password is required');
+					done();
+				});
+		});
+
+
+		it('should not allow to change password without confirm password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: 'abc123',
+					new_password: 'xyz123',
 				})
 				.end((err, res) => {
 					checkHeaders(res, 400);
@@ -508,7 +593,24 @@ describe('User API', () => {
 		});
 
 
-		let newToken = null;
+		it('should not allow to change password for invalid new password', done => {
+			chai.request(API)
+				.post('/change_password')
+				.set('Authorization', 'Bearer ' + token)
+				.send({
+					email: 'a@gmail.com',
+					password: 'abc123',
+					new_password: '123',
+					new_password_confirm: '123',
+				})
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Password must be 6-24 characters, including letters and digits');
+					done();
+				});
+		});
+
+
 		it('should allow to change password', done => {
 			chai.request(API)
 				.post('/change_password')
@@ -522,7 +624,7 @@ describe('User API', () => {
 				.end((err, res) => {
 					checkHeaders(res, 200);
 					res.body.token.should.be.a('string');
-					newToken = res.body.token;
+					// Update token?
 					done();
 				});
 		});

@@ -7,7 +7,6 @@
 
 const bcrypt = require('bcrypt');
 
-
 function generatePasswordHash(password) {
 	return bcrypt.genSalt(10) // 10 is default
 		.then((salt) => {
@@ -15,9 +14,6 @@ function generatePasswordHash(password) {
 		})
 		.then(hash => {
 			return Promise.resolve(hash);
-		})
-		.catch(err => {
-			return Promise.reject(err)
 		});
 }
 
@@ -62,25 +58,26 @@ module.exports = {
 			};
 		},
 
-		validatePassword: function (password, done) {
-			bcrypt
-				.compare(password, this.toObject().encryptedPassword)
-				.then(match => {
-					done(null, !!match);
-				})
-				.catch(err => {
-					done(err, false);
-				});
+		/**
+		 * Validates user password with stored password hash
+		 * @param password
+		 * @returns {Promise}
+		 */
+		validatePassword: function (password) {
+			return bcrypt.compare(password, this.toObject().encryptedPassword);
+
 		},
 
-		setPassword: function (password, done) {
-			generatePasswordHash(password)
+
+		/**
+		 * Set user password
+		 * @param password
+		 * @returns {Promise}
+		 */
+		setPassword: function (password) {
+			return generatePasswordHash(password)
 				.then(hash => {
 					this.encryptedPassword = hash;
-					done();
-				})
-				.catch(err => {
-					done(err);
 				});
 		}
 	},
@@ -101,6 +98,5 @@ module.exports = {
 				next(err);
 			});
 	}
-
 };
 

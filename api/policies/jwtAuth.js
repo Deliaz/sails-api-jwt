@@ -8,6 +8,7 @@
  */
 
 const API_ERRORS = require('../constants/APIErrors');
+const TOKEN_RE = /^Bearer$/i;
 
 module.exports = function (req, res, next) {
 	let token = null;
@@ -18,7 +19,7 @@ module.exports = function (req, res, next) {
 			const scheme = parts[0];
 			const credentials = parts[1];
 
-			if (/^Bearer$/i.test(scheme)) {
+			if (TOKEN_RE.test(scheme)) {
 				token = credentials;
 			}
 		}

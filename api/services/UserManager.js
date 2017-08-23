@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const shortid = require('shortid');
 const moment = require('moment');
@@ -9,13 +8,15 @@ const API_ERRORS = require('../constants/APIErrors');
 const LOCK_INTERVAL_SEC = 120;
 const LOCK_TRY_COUNT = 5;
 
-function doesUsernameExist(email, done) {
-	User
-		.findOne({email: email})
-		.exec((err, user) => {
-			if (err) return done(err);
-			return done(null, !!user);
-		});
+function doesUsernameExist(email) {
+	return new Promise((resolve, reject) => {
+		User
+			.findOne({email: email})
+			.exec((err, user) => {
+				if (err) return reject(err);
+				return resolve(!!user);
+			});
+	});
 }
 
 function updateUserLockState(user, done) {
@@ -46,24 +47,22 @@ function updateUserLockState(user, done) {
 module.exports = {
 	createUser: (values) => {
 		return new Promise((resolve, reject) => {
-			doesUsernameExist(values.email, (err, exists) => {
-				if (err) {
-					return reject(err);
-				}
+			doesUsernameExist(values.email)
+				.then(exists => {
+					if (exists) {
+						return reject(API_ERRORS.EMAIL_IN_USE);
+					}
 
-				if (exists) {
-					return reject(API_ERRORS.EMAIL_IN_USE);
-				}
+					User.create(values).exec((createErr, user) => {
+						if (createErr) return reject(createErr);
 
-				User.create(values).exec((createErr, user) => {
-					if (createErr) return reject(createErr);
-
-					UserManager._generateUserToken(user, token => {
-						// todo: send welcome email
-						resolve(token);
+						UserManager._generateUserToken(user, token => {
+							// todo: send welcome email
+							resolve(token);
+						});
 					});
-				});
-			});
+				})
+				.catch(reject);
 		});
 	},
 
@@ -97,7 +96,7 @@ module.exports = {
 	authenticateUserByToken: function (token) {
 		return new Promise((resolve, reject) => {
 			jwt.verify(token, sails.config.jwt_secret, {}, (err, tokenData) => {
-					if (err) return reject(err); // JWT parse error
+				if (err) return reject(err); // JWT parse error
 
 				User
 					.findOne({id: tokenData.id})
@@ -112,8 +111,7 @@ module.exports = {
 						}
 						return resolve(user);
 					});
-				}
-			);
+			});
 		});
 	},
 
@@ -127,11 +125,13 @@ module.exports = {
 					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
 					if (user.locked) return reject(API_ERRORS.USER_LOCKED);
 
-					user.validatePassword(password, (validErr, isValid) => {
-						if (validErr) return reject(validErr);
-						resolve({isValid, user});
-					});
-				})
+					user
+						.validatePassword(password)
+						.then(isValid => {
+							resolve({isValid, user});
+						})
+						.catch(reject);
+				});
 		});
 	},
 
@@ -184,18 +184,19 @@ module.exports = {
 						return reject(API_ERRORS.INVALID_PASSWORD);
 					}
 					else {
-						user.setPassword(newPassword, err => {
-							if (err) return reject(err); // Generate hash error
+						user
+							.setPassword(newPassword)
+							.then(() => {
+								user.resetToken = null;
+								user.passwordFailures = 0;
+								user.lastPasswordFailure = null;
+								user.save();
 
-							user.resetToken = null;
-							user.passwordFailures = 0;
-							user.lastPasswordFailure = null;
-							user.save();
-
-							UserManager._generateUserToken(user, token => {
-								resolve(token);
-							});
-						});
+								UserManager._generateUserToken(user, token => {
+									resolve(token);
+								});
+							})
+							.catch(reject);
 					}
 				})
 				.catch(reject);
@@ -212,16 +213,17 @@ module.exports = {
 
 					// TODO Check reset token validity
 
-					user.setPassword(newPassword, err => {
-						if (err) return reject(err);
+					user
+						.setPassword(newPassword)
+						.then(() => {
+							user.resetToken = null;
+							user.passwordFailures = 0;
+							user.lastPasswordFailure = null;
+							user.save();
 
-						user.resetToken = null;
-						user.passwordFailures = 0;
-						user.lastPasswordFailure = null;
-						user.save();
-
-						resolve();
-					});
+							resolve();
+						})
+						.catch(reject);
 				});
 		});
 	}

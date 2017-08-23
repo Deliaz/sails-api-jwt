@@ -87,7 +87,6 @@ module.exports = {
 					case API_ERRORS.INVALID_EMAIL_PASSWORD:
 					case API_ERRORS.USER_NOT_FOUND:
 						return res.badRequest(Utils.jsonErr('Invalid email or password'));
-						break;
 					case API_ERRORS.USER_LOCKED:
 						return res.forbidden(Utils.jsonErr('Account locked'));
 					default:
@@ -113,7 +112,7 @@ module.exports = {
 					return res.notFound(Utils.jsonErr('User not found'));
 				}
 				return res.serverError(Utils.jsonErr(err));
-			})
+			});
 	},
 
 	changePassword: function (req, res) {
@@ -135,7 +134,7 @@ module.exports = {
 			return res.badRequest(Utils.jsonErr('Password does not match'));
 		}
 
-		if (!passSchema.validate(currentPassword)) {
+		if (!passSchema.validate(newPassword)) {
 			return res.badRequest(Utils.jsonErr('Password must be 6-24 characters, including letters and digits'));
 		}
 
@@ -148,8 +147,11 @@ module.exports = {
 				switch (err) {
 					case API_ERRORS.USER_NOT_FOUND:
 						return res.badRequest(Utils.jsonErr('Email not found'));
-					case API_ERRORS.USER_LOCKED:
-						return res.forbidden(Utils.jsonErr('Account locked'));
+
+					// Processed by 'Invalid token' from policy
+					// case API_ERRORS.USER_LOCKED:
+					// 	return res.forbidden(Utils.jsonErr('Account locked'));
+
 					case API_ERRORS.INVALID_PASSWORD:
 						return res.badRequest(Utils.jsonErr('Invalid password'));
 					default:
@@ -191,7 +193,7 @@ module.exports = {
 					return res.badRequest(Utils.jsonErr('Invalid email'));
 				}
 				return res.serverError(Utils.jsonErr(err));
-			})
+			});
 	},
 };
 

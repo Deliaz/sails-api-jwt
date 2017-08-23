@@ -1,0 +1,8 @@
+.nyc_output
+.tmp
+coverage
+node_modules
+app.js
+
+api/responses
+config

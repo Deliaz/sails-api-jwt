@@ -12,6 +12,6 @@ module.exports = {
 	jsonErr(errorMessage) {
 		return {
 			err_msg: errorMessage
-		}
+		};
 	}
 };
