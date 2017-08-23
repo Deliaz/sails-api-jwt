@@ -661,7 +661,7 @@ describe('User API', () => {
 								password: '000000'
 							})
 							.end(resolve);
-					}, i * 150);
+					}, i * 200);
 				}));
 			}
 
