@@ -13,6 +13,7 @@ const passSchema = new passValidator();
 const passMinLen = 6;
 const passMaxLen = 24;
 
+// Scheme for password validation
 // See ref https://github.com/tarunbatra/password-validator
 passSchema
 	.is().min(passMinLen)
@@ -20,7 +21,14 @@ passSchema
 	.has().letters()
 	.has().digits();
 
+
 module.exports = {
+
+	/**
+	 * Action for /user
+	 * @param req
+	 * @param res
+	 */
 	index: function (req, res) {
 
 		// We use here req.userInfo which is set in policies/jwtAuth.js
@@ -30,6 +38,13 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Action for /user/create
+	 * @param req
+	 * @param res
+	 * @returns {*}
+	 */
 	create: function (req, res) {
 		const email = req.body.email;
 		const password = req.body.password;
@@ -66,6 +81,12 @@ module.exports = {
 	},
 
 
+	/**
+	 * Action for /user/login
+	 * @param req
+	 * @param res
+	 * @returns {*}
+	 */
 	login: function (req, res) {
 		const email = req.body.email;
 		const password = req.body.password;
@@ -95,6 +116,13 @@ module.exports = {
 			});
 	},
 
+
+	/**
+	 * Action for /user/forgot
+	 * @param req
+	 * @param res
+	 * @returns {*}
+	 */
 	forgotPassword: function (req, res) {
 		const email = req.body.email;
 
@@ -115,6 +143,13 @@ module.exports = {
 			});
 	},
 
+
+	/**
+	 * Action for /user/change_password
+	 * @param req
+	 * @param res
+	 * @returns {*}
+	 */
 	changePassword: function (req, res) {
 		const email = req.body.email;
 		const currentPassword = req.body.password;
@@ -160,6 +195,13 @@ module.exports = {
 			});
 	},
 
+
+	/**
+	 * Action for /user/reset_password
+	 * @param req
+	 * @param res
+	 * @returns {*}
+	 */
 	resetPasswordByResetToken: function (req, res) {
 		const email = req.body.email;
 		const resetToken = req.body.reset_token;

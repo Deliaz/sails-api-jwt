@@ -45,6 +45,12 @@ function updateUserLockState(user, done) {
 }
 
 module.exports = {
+
+	/**
+	 * Creates a new user
+	 * @param values
+	 * @returns {Promise}
+	 */
 	createUser: (values) => {
 		return new Promise((resolve, reject) => {
 			doesUsernameExist(values.email)
@@ -66,6 +72,15 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Generates JWT token
+	 * TODO Promisify
+	 * @param user
+	 * @param done
+	 * @returns {*}
+	 * @private
+	 */
 	_generateUserToken: function (user, done) {
 
 		// Password hash helps to invalidate token when password is changed
@@ -89,7 +104,10 @@ module.exports = {
 
 	/**
 	 * Authenticates user by a JWT token.
+	 *
 	 * Uses in JWT Policy
+	 * @see api/policies/jwtAuth.js
+	 *
 	 * @param token
 	 * @returns {Promise}
 	 */
@@ -116,6 +134,12 @@ module.exports = {
 	},
 
 
+	/**
+	 * Validates user password
+	 * @param email
+	 * @param password
+	 * @returns {Promise}
+	 */
 	validatePassword(email, password) {
 		return new Promise((resolve, reject) => {
 			User
@@ -135,6 +159,13 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Authenticates user by email and password.
+	 * @param email
+	 * @param password
+	 * @returns {Promise}
+	 */
 	authenticateUserByPassword: function (email, password) {
 		return new Promise((resolve, reject) => {
 			UserManager
@@ -156,6 +187,12 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Generates password reset token
+	 * @param email
+	 * @returns {Promise}
+	 */
 	generateResetToken: function (email) {
 		return new Promise((resolve, reject) => {
 			User
@@ -175,6 +212,14 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Changes password
+	 * @param email
+	 * @param currentPassword
+	 * @param newPassword
+	 * @returns {Promise}
+	 */
 	changePassword: function (email, currentPassword, newPassword) {
 		return new Promise((resolve, reject) => {
 			UserManager
@@ -203,6 +248,14 @@ module.exports = {
 		});
 	},
 
+
+	/**
+	 * Resets password to a new one by reset token.
+	 * @param email
+	 * @param resetToken
+	 * @param newPassword
+	 * @returns {Promise}
+	 */
 	resetPasswordByResetToken: function (email, resetToken, newPassword) {
 		return new Promise((resolve, reject) => {
 			User
