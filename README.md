@@ -19,7 +19,8 @@ It supports:
 Things to do: 
 1. Optional email notifications (based on environment);
 2. Keep reset token encrypted and with a validity date;
-3. Unlock after some freeze period.  
+3. Unlock after some freeze period;
+4. Registration confirmation (with a confirm token).
 
 * * * * *
 
@@ -66,16 +67,16 @@ Creates a new user. Requirements for the password: length is 6-24, use letters a
 __request__ 
 ```json
 {
-	"email": "email@example.com",
-	"password": "abc123",
-	"password_confirm": "abc123"
+  "email": "email@example.com",
+  "password": "abc123",
+  "password_confirm": "abc123"
 }
 ```
 
 __response__
 ```json
 {
-	"token": "<JWT Token>"
+  "token": "<JWT Token>"
 }
 ```
 
@@ -84,15 +85,15 @@ __response__
 __request__ 
 ```json
 {
-	"email": "email@example.com",
-	"password": "abc123"
+  "email": "email@example.com",
+  "password": "abc123"
 }
 ```
 
 __response__
 ```json
 {
-	"token": "<JWT Token>"
+  "token": "<JWT Token>"
 }
 ```
 N.B. Account will be blocked after `5` fails in `2 mins` (configurable in `api/services/UserManager.js`). 
@@ -103,17 +104,17 @@ Changes user password. User should be authorized.
 __request__ 
 ```json
 {
-	"email": "email@example.com",
-	"password": "abc123",
-	"new_password": "xyz321",
-	"new_password_confirm": "xyz321"
+  "email": "email@example.com",
+  "password": "abc123", 
+  "new_password": "xyz321",
+  "new_password_confirm": "xyz321"
 }
 ```
 
 __response__
 ```json
 {
-	"token": "<JWT Token>"
+  "token": "<JWT Token>"
 }
 ```
 N.B. All old tokens will be invalid after changing password.
@@ -124,14 +125,14 @@ Initiates procedure of password recovery.
 __request__ 
 ```json
 {
-    "email": "email@example.com"
+  "email": "email@example.com"
 }
 ```
 
 __response__
 ```json
 {
-	"message": "Check your email"
+  "message": "Check your email"
 }
 ``` 
 
@@ -142,17 +143,17 @@ Reset password to a new one with a reset token. Reset token sends to a user afte
 __request__ 
 ```json
 {
-	"email": "email@example.com",
-	"reset_token": "<Password Reset Token>",
-	"new_password": "xyz321",
-	"new_password_confirm": "xyz321"
+  "email": "email@example.com",
+  "reset_token": "<Password Reset Token>",
+  "new_password": "xyz321",
+  "new_password_confirm": "xyz321"
 }
 ```
 
 __response__
 ```json
 {
-	"message": "Done"
+  "message": "Done"
 }
 ```
 
