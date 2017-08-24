@@ -221,6 +221,7 @@ describe('User API', () => {
 					checkHeaders(res, 200);
 					res.body.id.should.be.a('number');
 					res.body.email.should.be.a('string');
+					Object.keys(res.body).length.should.be.equal(2);
 					done();
 				});
 		});

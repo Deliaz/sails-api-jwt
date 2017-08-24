@@ -34,10 +34,7 @@ module.exports = function (req, res, next) {
 	UserManager
 		.authenticateUserByToken(token)
 		.then(user => {
-			req.userInfo = {
-				id: user.id,
-				email: user.email
-			};
+			req.userInfo = user.toJSON();
 			next();
 		})
 		.catch(err => {
