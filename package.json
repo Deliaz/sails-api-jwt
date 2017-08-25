@@ -16,6 +16,7 @@
     "farmhash": "^2.0.0",
     "include-all": "^1.0.0",
     "jsonwebtoken": "^7.4.2",
+    "mailgun-js": "^0.13.1",
     "moment": "^2.18.1",
     "password-validator": "^4.0.0",
     "rc": "1.0.1",
