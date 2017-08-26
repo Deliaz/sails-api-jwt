@@ -95,6 +95,7 @@ module.exports = {
 				next();
 			})
 			.catch(err => {
+				/* istanbul ignore next */
 				next(err);
 			});
 	}

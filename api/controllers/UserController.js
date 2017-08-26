@@ -76,6 +76,7 @@ module.exports = {
 				if (err === API_ERRORS.EMAIL_IN_USE) {
 					return res.badRequest(Utils.jsonErr('This email is already in use'));
 				}
+				/* istanbul ignore next */
 				return res.serverError(Utils.jsonErr(err));
 			});
 	},
@@ -111,6 +112,7 @@ module.exports = {
 					case API_ERRORS.USER_LOCKED:
 						return res.forbidden(Utils.jsonErr('Account locked'));
 					default:
+						/* istanbul ignore next */
 						return res.serverError(Utils.jsonErr(err));
 				}
 			});
@@ -139,6 +141,7 @@ module.exports = {
 				if (err === API_ERRORS.USER_NOT_FOUND) {
 					return res.notFound(Utils.jsonErr('User not found'));
 				}
+				/* istanbul ignore next */
 				return res.serverError(Utils.jsonErr(err));
 			});
 	},
@@ -190,6 +193,7 @@ module.exports = {
 					case API_ERRORS.INVALID_PASSWORD:
 						return res.badRequest(Utils.jsonErr('Invalid password'));
 					default:
+						/* istanbul ignore next */
 						return res.serverError(Utils.jsonErr(err));
 				}
 			});
@@ -234,6 +238,7 @@ module.exports = {
 					// We show invalid email instead of User Not Found
 					return res.badRequest(Utils.jsonErr('Invalid email'));
 				}
+				/* istanbul ignore next */
 				return res.serverError(Utils.jsonErr(err));
 			});
 	},

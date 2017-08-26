@@ -46,6 +46,7 @@
 		"UserController": true,
 		"User": true,
 		"UserManager": true,
-		"Utils": true
+		"Utils": true,
+		"EmailService": true
 	}
 }

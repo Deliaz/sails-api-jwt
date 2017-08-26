@@ -1,19 +1,47 @@
 /**
  * Implementation for Email Service
- * It uses mailgun.com
+ * It built for Mailgun.com
+ *
+ * TODO Tests for production. Stub functions?
  */
 
-const api_key = 'key-XXXXXXXXXXXXXXXXXXXXXXX';
-const domain = 'www.mydomain.com';
-const mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
+const Mailgun = require('mailgun-js');
+const fromString = sails.config.mail.from;
 
-const data = {
-	from: 'Excited User <me@samples.mailgun.org>',
-	to: 'serobnic@mail.ru',
-	subject: 'Hello',
-	text: 'Testing some Mailgun awesomness!'
+let mailgun;
+if (sails.config.environment === 'production') {
+	mailgun = Mailgun({
+		apiKey: sails.config.mail.api_key,
+		domain: sails.config.mail.domain
+	});
+}
+
+module.exports = {
+
+	sendWelcome(email) {
+		this._send(email, 'Welcome!', 'You have been successfully registered');
+	},
+
+	sendResetToken(email, resetToken) {
+		this._send(email, 'Password reset', 'You reset token: ' + resetToken);
+	},
+
+
+	_send(email, subject, text) {
+		if (sails.config.environment === 'production') {
+			const sendData = {
+				from: fromString,
+				to: email,
+				subject,
+				text
+			};
+			mailgun
+				.messages()
+				.send(sendData, (error) => {
+					if (error) console.error(error);
+				});
+		} else {
+			console.log(`EMAIL. To: "${email}", Subject: "${subject}", Text: "${text}"`);
+		}
+	}
 };
-
-mailgun.messages().send(data, function (error, body) {
-	console.log(body);
-});

@@ -52,8 +52,10 @@ module.exports = {
 	 * @returns {Promise}
 	 */
 	createUser: (values) => {
+		const email = values.email;
+
 		return new Promise((resolve, reject) => {
-			doesUsernameExist(values.email)
+			doesUsernameExist(email)
 				.then(exists => {
 					if (exists) {
 						return reject(API_ERRORS.EMAIL_IN_USE);
@@ -63,8 +65,8 @@ module.exports = {
 						if (createErr) return reject(createErr);
 
 						UserManager._generateUserToken(user, token => {
-							// todo: send welcome email
 							resolve(token);
+							EmailService.sendWelcome(email);
 						});
 					});
 				})
@@ -201,11 +203,12 @@ module.exports = {
 					if (err) return reject(err); // Query error
 					if (!user) return reject(API_ERRORS.USER_NOT_FOUND);
 
-					user.resetToken = shortid.generate();
+					const resetToken = shortid.generate();
+					user.resetToken = resetToken;
 					user.save(saveErr => {
 						if (saveErr) return reject(saveErr);
 
-						// TODO: email the token to the user
+						EmailService.sendResetToken(email, resetToken);
 						resolve();
 					});
 				});
