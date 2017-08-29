@@ -23,25 +23,27 @@ module.exports = {
 	},
 
 	sendResetToken(email, resetToken) {
-		this._send(email, 'Password reset', 'You reset token: ' + resetToken);
+		this._send(email, 'Password reset', 'Your reset token: ' + resetToken);
 	},
 
 
 	_send(email, subject, text) {
+		const sendData = {
+			from: fromString,
+			to: email,
+			subject,
+			text
+		};
+
 		if (sails.config.environment === 'production') {
-			const sendData = {
-				from: fromString,
-				to: email,
-				subject,
-				text
-			};
 			mailgun
 				.messages()
 				.send(sendData, (error) => {
+					/* istanbul ignore next */
 					if (error) console.error(error);
 				});
 		} else {
-			console.log(`EMAIL. To: "${email}", Subject: "${subject}", Text: "${text}"`);
+			console.log(`EMAIL. ${JSON.stringify(sendData)}`);
 		}
 	}
 };

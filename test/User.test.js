@@ -5,8 +5,11 @@ const sails = require('sails');
 const chai = require('chai');
 chai.should();
 const chaiHttp = require('chai-http');
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
 
 chai.use(chaiHttp);
+chai.use(sinonChai);
 
 const API = 'http://localhost:1337/user';
 
@@ -112,6 +115,7 @@ describe('User API', () => {
 		});
 
 		it('should create a new user', done => {
+			let spy = sinon.spy(console, 'log');
 			chai.request(API)
 				.post('/create')
 				.send({
@@ -123,6 +127,9 @@ describe('User API', () => {
 					checkHeaders(res, 201);
 
 					res.body.token.should.be.a('string');
+
+					spy.should.have.been.calledWithMatch(/(.+a@gmail\.com.+You have been successfully registered)/);
+					spy.restore();
 
 					token = res.body.token;
 					done();
@@ -274,12 +281,16 @@ describe('User API', () => {
 
 	describe('Password recovery', () => {
 		it('should allow to request reset password', done => {
+			let spy = sinon.spy(console, 'log');
+
 			chai.request(API)
 				.post('/forgot')
 				.send({email: 'a@gmail.com'})
 				.end((err, res) => {
 					checkHeaders(res, 200);
 					res.body.message.should.be.equal('Check your email');
+					spy.should.have.been.calledWithMatch(/(.+a@gmail\.com.+"Your reset token:\s?[A-z0-9-_]+")/);
+					spy.restore();
 					done();
 				});
 		});

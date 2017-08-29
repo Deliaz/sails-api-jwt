@@ -45,7 +45,9 @@
     "coveralls": "^2.13.1",
     "eslint": "^4.5.0",
     "mocha": "^3.5.0",
-    "nyc": "^11.1.0"
+    "nyc": "^11.1.0",
+    "sinon": "^3.2.1",
+    "sinon-chai": "^2.13.0"
   },
   "nyc": {
     "exclude": [
