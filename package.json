@@ -12,18 +12,18 @@
     "API"
   ],
   "dependencies": {
-    "bcrypt": "^1.0.2",
-    "farmhash": "^2.0.0",
-    "include-all": "^1.0.0",
-    "jsonwebtoken": "^7.4.2",
+    "bcrypt": "^1.0.3",
+    "farmhash": "^2.0.2",
+    "include-all": "^4.0.3",
+    "jsonwebtoken": "^8.0.1",
     "mailgun-js": "^0.13.1",
     "moment": "^2.18.1",
     "password-validator": "^4.0.0",
-    "rc": "1.0.1",
+    "rc": "1.2.1",
     "sails": "~0.12.13",
-    "sails-disk": "~0.10.9",
+    "sails-disk": "~0.10.10",
     "shortid": "^2.2.8",
-    "validator": "^8.0.0"
+    "validator": "^8.2.0"
   },
   "scripts": {
     "debug": "node debug app.js",
@@ -40,12 +40,12 @@
   "author": "deliaz",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^4.1.1",
+    "chai": "^4.1.2",
     "chai-http": "^3.0.0",
     "coveralls": "^2.13.1",
-    "eslint": "^4.5.0",
-    "mocha": "^3.5.0",
-    "nyc": "^11.1.0",
+    "eslint": "^4.6.1",
+    "mocha": "^3.5.3",
+    "nyc": "^11.2.1",
     "sinon": "^3.2.1",
     "sinon-chai": "^2.13.0"
   },
