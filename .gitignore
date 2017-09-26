@@ -118,3 +118,6 @@ nbproject
 .node_history
 .nyc_output
 coverage
+
+
+package-lock.json
