@@ -7,6 +7,19 @@ chai.should();
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
+const mock = require('mock-require');
+
+mock('mailgun-js', function () {
+	return {
+		messages: () => {
+			return {
+				send: function (sendData) {
+					console.log(`EMAIL. ${JSON.stringify(sendData)}`);
+				}
+			};
+		}
+	};
+});
 
 chai.use(chaiHttp);
 chai.use(sinonChai);

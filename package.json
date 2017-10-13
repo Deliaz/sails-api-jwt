@@ -45,6 +45,7 @@
     "coveralls": "^2.13.1",
     "eslint": "^4.7.2",
     "mocha": "^3.5.3",
+    "mock-require": "^2.0.2",
     "nyc": "^11.2.1",
     "sinon": "^4.0.0",
     "sinon-chai": "^2.13.0"
