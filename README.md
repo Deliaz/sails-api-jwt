@@ -1,10 +1,10 @@
 # JSON Web Token authorization API
 ## Based on [Sails.js](http://sailsjs.com/) 
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/Deliaz/sails-api-jwt.svg)](https://greenkeeper.io/)
 
-[![Build status](https://travis-ci.org/Deliaz/sails-api-jwt.svg?branch=master)](https://travis-ci.org/Deliaz/sails-api-jwt)
 [![Coverage Status](https://coveralls.io/repos/github/Deliaz/sails-api-jwt/badge.svg?branch=master)](https://coveralls.io/github/Deliaz/sails-api-jwt?branch=master)
+[![Build status](https://travis-ci.org/Deliaz/sails-api-jwt.svg?branch=master)](https://travis-ci.org/Deliaz/sails-api-jwt)
+[![Greenkeeper badge](https://badges.greenkeeper.io/Deliaz/sails-api-jwt.svg)](https://greenkeeper.io/)
 
 
 __An example implementation of JWT-based API for user registration and authorization.__ 
