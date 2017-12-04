@@ -13,16 +13,19 @@ __An example implementation of JWT-based API for user registration and authoriza
 It supports:
 1. User register;
 2. User login;
-3. Token generation and validation;
-4. Password reset (with a reset token);
-5. Password change (with JWT credentials);
-6. Account locking.
+3. Getting account info;
+4. Token generation and validation;
+5. Password reset (with a reset token);
+6. Password change (with JWT credentials);
+7. Account locking.
 
 Things to do: 
 1. Optional email notifications (based on environment);
 2. Keep reset token encrypted and with a validity date;
 3. Unlock after some freeze period;
 4. Registration confirmation (with a confirm token).
+
+<small>[Russian description / Русское описание](http://localstorage.ru/json-web-token-auth-for-sails-js/)</small>
 
 * * * * *
 
@@ -38,7 +41,7 @@ For security reasons, please change __JWT_SECRET__ in `api/config/env/developmen
 
 
 
-## JWT Token
+## Pass JWT
 
 Token-free endpoints: 
 ```
@@ -51,19 +54,19 @@ Token-free endpoints:
 Token-required endpoints: 
 ```
 /user
-/change_password 
+/user/change_password 
 ```
 
-To pass a JWT token use `Authorization` header: 
+To pass a JWT use `Authorization` header: 
 ```
-Authorization: Bearer <JWT Token>
+Authorization: Bearer <JWT>
 ```
 
 ## API methods description
 For some reasons I do not use REST. Shortcuts also disabled by default 
 (see `api/config/blueprints.js`).
 
-#### `/user/create` 
+#### `POST /user/create` 
 Creates a new user. Requirements for the password: length is 6-24, use letters and digits. 
 
 __request__ 
@@ -78,12 +81,12 @@ __request__
 __response__
 ```json
 {
-  "token": "<JWT Token>"
+  "token": "<JWT>"
 }
 ```
 
 
-#### `/user/login` 
+#### `POST /user/login` 
 __request__ 
 ```json
 {
@@ -95,12 +98,26 @@ __request__
 __response__
 ```json
 {
-  "token": "<JWT Token>"
+  "token": "<JWT>"
 }
 ```
-N.B. Account will be blocked after `5` fails in `2 mins` (configurable in `api/services/UserManager.js`). 
+N.B. Account will be blocked after `5` fails in `2 mins` (configurable in `api/services/UserManager.js`).
 
-#### `/user/change_password`
+
+#### `GET /user`
+Returns basic info about current account. Requires authorization.  
+__request__ 
+Params not required.
+
+__response__
+```json
+{
+  "id": 1,
+  "email": "email@example.com"
+}
+``` 
+
+#### `POST /user/change_password`
 Changes user password. User should be authorized.   
 
 __request__ 
@@ -116,12 +133,12 @@ __request__
 __response__
 ```json
 {
-  "token": "<JWT Token>"
+  "token": "<JWT>"
 }
 ```
 N.B. All old tokens will be invalid after changing password.
 
-#### `/user/forgot`
+#### `POST /user/forgot`
 Initiates procedure of password recovery.
 
 __request__ 
@@ -138,7 +155,7 @@ __response__
 }
 ``` 
 
-#### `/user/reset_password`
+#### `POST /user/reset_password`
 Reset password to a new one with a reset token. Reset token sends to a user after 
 `/user/forgot`.   
 
@@ -164,7 +181,7 @@ __response__
 All endpoints uses HTTP status codes to notify about execution results  
 * `200` ok, reqeust executed successfully;
 * `201` created, new user created successfully;
-* `400` bad requests, usually means wrong params;
+* `400` bad request, usually means wrong params;
 * `403` forbidden, for locked accounts;
 * `500` server error, something went wrong.
 
