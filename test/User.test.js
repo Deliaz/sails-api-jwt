@@ -53,6 +53,7 @@ function checkHeaders(res, statusCode) {
 
 describe('User API', () => {
 	let token;
+	let newToken;
 
 	describe('Creating and auth', () => {
 
@@ -649,7 +650,9 @@ describe('User API', () => {
 				.end((err, res) => {
 					checkHeaders(res, 200);
 					res.body.token.should.be.a('string');
-					// Update token?
+
+					// Update token
+					newToken = res.body.token;
 					done();
 				});
 		});
@@ -665,6 +668,51 @@ describe('User API', () => {
 				});
 		});
 
+		it('should return user info for new token', done => {
+			chai.request(API)
+				.post('/index')
+				.set('Authorization', 'Bearer ' + newToken)
+				.end((err, res) => {
+					checkHeaders(res, 200);
+					res.body.id.should.be.a('number');
+					res.body.email.should.be.a('string');
+					Object.keys(res.body).length.should.be.equal(2);
+					done();
+				});
+		});
+
+	});
+
+	describe('Handle GET for POST methods', () => {
+		const ENDPOINTS = [
+			'/create',
+			'/login',
+			'/forgot',
+			'/reset_password'
+		];
+
+		ENDPOINTS.forEach(url => {
+			it(`should show error about empty body for ${url}`, done => {
+				chai.request(API)
+					.get(url)
+					.end((err, res) => {
+						checkHeaders(res, 400);
+						res.body.err_msg.should.be.equal('Empty body');
+						done();
+					});
+			});
+		});
+
+		it('should show error about empty body for /change_password', done => {
+			chai.request(API)
+				.get('/change_password')
+				.set('Authorization', 'Bearer ' + newToken)
+				.end((err, res) => {
+					checkHeaders(res, 400);
+					res.body.err_msg.should.be.equal('Empty body');
+					done();
+				});
+		});
 	});
 
 	describe('Lock account', () => {
@@ -672,7 +720,7 @@ describe('User API', () => {
 		// TODO lock timeout
 
 		const N = 5;
-		it(`should lock account after ${N} times`, function(done) {
+		it(`should lock account after ${N} times`, function (done) {
 			this.timeout(3000);
 
 			const promises = [];
@@ -712,7 +760,7 @@ describe('User API', () => {
 		it('should not allow to change password for locked account', done => {
 			chai.request(API)
 				.post('/change_password')
-				.set('Authorization', 'Bearer ' + token)
+				.set('Authorization', 'Bearer ' + newToken)
 				.send({
 					email: 'a@gmail.com',
 					password: 'xyz123',

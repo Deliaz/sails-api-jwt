@@ -46,6 +46,10 @@ module.exports = {
 	 * @returns {*}
 	 */
 	create: function (req, res) {
+		if(!req.body) {
+			return res.badRequest(Utils.jsonErr('Empty body'));
+		}
+
 		const email = req.body.email;
 		const password = req.body.password;
 		const passwordConfirm = req.body.password_confirm;
@@ -89,6 +93,10 @@ module.exports = {
 	 * @returns {*}
 	 */
 	login: function (req, res) {
+		if(!req.body) {
+			return res.badRequest(Utils.jsonErr('Empty body'));
+		}
+
 		const email = req.body.email;
 		const password = req.body.password;
 
@@ -126,6 +134,10 @@ module.exports = {
 	 * @returns {*}
 	 */
 	forgotPassword: function (req, res) {
+		if(!req.body) {
+			return res.badRequest(Utils.jsonErr('Empty body'));
+		}
+
 		const email = req.body.email;
 
 		if (!email || !validator.isEmail(email)) {
@@ -154,6 +166,10 @@ module.exports = {
 	 * @returns {*}
 	 */
 	changePassword: function (req, res) {
+		if(!req.body) {
+			return res.badRequest(Utils.jsonErr('Empty body'));
+		}
+
 		const email = req.body.email;
 		const currentPassword = req.body.password;
 		const newPassword = req.body.new_password;
@@ -207,6 +223,10 @@ module.exports = {
 	 * @returns {*}
 	 */
 	resetPasswordByResetToken: function (req, res) {
+		if(!req.body) {
+			return res.badRequest(Utils.jsonErr('Empty body'));
+		}
+
 		const email = req.body.email;
 		const resetToken = req.body.reset_token;
 		const newPassword = req.body.new_password;
