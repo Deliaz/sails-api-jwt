@@ -721,7 +721,7 @@ describe('User API', () => {
 
 		const N = 5;
 		it(`should lock account after ${N} times`, function (done) {
-			this.timeout(3000);
+			this.timeout(5000);
 
 			const promises = [];
 			for (let i = 0; i < N; i++) {
