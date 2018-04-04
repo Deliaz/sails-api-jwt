@@ -21,7 +21,7 @@
     "password-validator": "^4.0.0",
     "rc": "^1.2.2",
     "sails": "^0.12.14",
-    "sails-disk": "^0.10.10",
+    "sails-disk": "^1.0.1",
     "shortid": "^2.2.8",
     "validator": "^9.1.2"
   },
