@@ -12,7 +12,7 @@
     "API"
   ],
   "dependencies": {
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^2.0.0",
     "farmhash": "^2.0.4",
     "include-all": "^4.0.3",
     "jsonwebtoken": "^8.1.0",
