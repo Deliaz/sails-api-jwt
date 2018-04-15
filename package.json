@@ -17,7 +17,7 @@
     "include-all": "^4.0.3",
     "jsonwebtoken": "^8.1.0",
     "mailgun-js": "^0.15.0",
-    "moment": "^2.19.3",
+    "moment": "2.22.0",
     "password-validator": "^4.0.0",
     "rc": "^1.2.2",
     "sails": "^0.12.14",
