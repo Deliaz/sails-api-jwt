@@ -1,5 +1,5 @@
 # JSON Web Token authorization API
-## Based on [Sails.js](http://sailsjs.com/) 
+## Based on [Sails.js](http://sailsjs.com/) (v0.12)
 
 
 [![Coverage Status](https://coveralls.io/repos/github/Deliaz/sails-api-jwt/badge.svg?branch=master)](https://coveralls.io/github/Deliaz/sails-api-jwt?branch=master)
