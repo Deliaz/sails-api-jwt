@@ -20,7 +20,7 @@
     "moment": "^2.19.3",
     "password-validator": "^4.0.0",
     "rc": "^1.2.2",
-    "sails": "^0.12.14",
+    "sails": "^1.0.2",
     "sails-disk": "^0.10.10",
     "shortid": "^2.2.8",
     "validator": "^9.1.2"
