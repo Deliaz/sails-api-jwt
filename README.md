@@ -25,8 +25,6 @@ Things to do:
 3. Unlock after some freeze period;
 4. Registration confirmation (with a confirm token).
 
-###### [Russian description / Русское описание](http://localstorage.ru/json-web-token-auth-for-sails-js/)
-
 * * * * *
 
 ## Start
